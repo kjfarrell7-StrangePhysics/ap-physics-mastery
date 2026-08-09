@@ -8,18 +8,19 @@ export default function App() {
   const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
   const [currentIdx, setCurrentIdx] = useState(0);
   const [results, setResults] = useState<{ [tag: string]: { correct: number; total: number } }>({});
-  const [feedback, setFeedback] = useState<string | null>(null);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
+  const [isAnswerChecked, setIsAnswerChecked] = useState(false);
+  const [showExplanation, setShowExplanation] = useState(false);
   const [isFinished, setIsFinished] = useState(false);
 
   const topicQuestions = QUESTION_BANK.filter((q) => q.topic === selectedTopic);
   const currentQuestion = topicQuestions[currentIdx];
 
-  const handleAnswer = (optionIdx: number) => {
-    if (selectedOption !== null) return; // Prevent changing answer after selection
-    setSelectedOption(optionIdx);
+  const handleCheckAnswer = () => {
+    if (selectedOption === null) return;
+    setIsAnswerChecked(true);
 
-    const isCorrect = optionIdx === currentQuestion.correctAnswer;
+    const isCorrect = selectedOption === currentQuestion.correctAnswer;
     const tag = currentQuestion.conceptTag;
 
     setResults((prev) => ({
@@ -29,13 +30,12 @@ export default function App() {
         total: (prev[tag]?.total || 0) + 1,
       },
     }));
-
-    setFeedback(isCorrect ? "Correct! Excellent analysis." : `Incorrect. ${currentQuestion.explanation}`);
   };
 
   const nextQuestion = () => {
-    setFeedback(null);
     setSelectedOption(null);
+    setIsAnswerChecked(false);
+    setShowExplanation(false);
     if (currentIdx < topicQuestions.length - 1) {
       setCurrentIdx(currentIdx + 1);
     } else {
@@ -47,17 +47,20 @@ export default function App() {
     setIsFinished(false);
     setSelectedTopic(null);
     setCurrentIdx(0);
-    setFeedback(null);
     setSelectedOption(null);
+    setIsAnswerChecked(false);
+    setShowExplanation(false);
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 p-6 flex flex-col items-center">
-      <div className="w-full max-w-2xl">
-        <header className="mb-6 flex justify-between items-center border-b border-slate-800 pb-4">
-          <h1 className="text-2xl font-bold text-blue-400 tracking-wide">AP Physics 1 Mastery</h1>
+    <div className="min-h-screen bg-slate-50 text-slate-900 p-6 flex flex-col items-center font-sans">
+      <div className="w-full max-w-3xl bg-white border border-slate-200 rounded-xl shadow-sm p-8">
+        
+        {/* Header */}
+        <header className="mb-6 flex justify-between items-center border-b border-slate-100 pb-4">
+          <h1 className="text-xl font-bold text-slate-800">AP Physics 1 Mastery Assessment</h1>
           {selectedTopic && !isFinished && (
-            <span className="text-xs font-semibold uppercase px-3 py-1 bg-slate-900 border border-slate-800 rounded-full text-slate-400">
+            <span className="text-xs font-semibold uppercase px-3 py-1 bg-slate-100 rounded-full text-slate-600">
               Question {currentIdx + 1} of {topicQuestions.length}
             </span>
           )}
@@ -65,31 +68,31 @@ export default function App() {
 
         {!selectedTopic ? (
           <div>
-            <h2 className="text-lg font-medium mb-4 text-slate-300">Select an AP Physics 1 Topic:</h2>
+            <h2 className="text-lg font-semibold mb-4 text-slate-700">Select an Exam Topic:</h2>
             <div className="grid gap-3">
               {TOPICS.map((t) => (
                 <button
                   key={t}
                   onClick={() => setSelectedTopic(t)}
-                  className="p-4 bg-slate-900 border border-slate-800 rounded-xl hover:border-blue-500 hover:bg-slate-800/60 text-left transition-all font-medium shadow-sm flex justify-between items-center"
+                  className="p-4 bg-white border border-slate-200 rounded-lg hover:border-blue-500 hover:bg-blue-50/30 text-left transition-all font-medium shadow-sm flex justify-between items-center text-slate-700"
                 >
                   <span>{t}</span>
-                  <span className="text-blue-400 text-sm">Start Practice →</span>
+                  <span className="text-blue-600 text-sm font-semibold">Start Exam →</span>
                 </button>
               ))}
             </div>
           </div>
         ) : isFinished ? (
-          <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl">
-            <h2 className="text-2xl font-bold mb-2 text-blue-400">Diagnostic Report Card</h2>
-            <p className="text-sm text-slate-400 mb-6">Performance breakdown by concept tag for {selectedTopic}:</p>
+          <div>
+            <h2 className="text-2xl font-bold mb-2 text-slate-800">Assessment Report Card</h2>
+            <p className="text-sm text-slate-500 mb-6">Performance summary for {selectedTopic}:</p>
             <div className="grid gap-3 mb-6">
               {Object.entries(results).map(([tag, data]) => {
                 const pct = Math.round((data.correct / data.total) * 100);
                 return (
-                  <div key={tag} className="flex justify-between items-center p-3.5 bg-slate-950 border border-slate-800/80 rounded-xl">
-                    <span className="font-mono text-sm text-slate-300 capitalize">{tag.replace(/_/g, ' ')}</span>
-                    <span className={`text-sm font-bold px-2.5 py-1 rounded-lg ${pct >= 70 ? 'bg-emerald-950 text-emerald-400 border border-emerald-800/50' : 'bg-rose-950 text-rose-400 border border-rose-800/50'}`}>
+                  <div key={tag} className="flex justify-between items-center p-4 bg-slate-50 border border-slate-200 rounded-lg">
+                    <span className="font-mono text-sm text-slate-700 capitalize">{tag.replace(/_/g, ' ')}</span>
+                    <span className={`text-sm font-bold px-3 py-1 rounded-md ${pct >= 70 ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}`}>
                       {pct}% ({data.correct}/{data.total})
                     </span>
                   </div>
@@ -98,59 +101,103 @@ export default function App() {
             </div>
             <button
               onClick={reset}
-              className="w-full bg-blue-600 hover:bg-blue-500 text-white font-medium py-3 rounded-xl transition-all shadow-lg shadow-blue-600/20"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-lg transition-all shadow"
             >
-              Back to Topic Selection
+              Return to Topic Selection
             </button>
           </div>
         ) : (
-          <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-xs uppercase tracking-wider text-blue-400 font-semibold">{currentQuestion.topic}</span>
-              <span className="text-xs text-slate-500 font-mono">Tag: {currentQuestion.conceptTag}</span>
+          <div>
+            <div className="mb-4">
+              <span className="text-xs uppercase tracking-wider text-slate-400 font-bold">Question {currentIdx + 1}</span>
+              <p className="mt-2 text-base text-slate-800 leading-relaxed font-normal">{currentQuestion.prompt}</p>
             </div>
 
-            <VisualAsset type={currentQuestion.visualType || 'kinematics_vt'} />
+            {/* Visual Graph Box matching Exam Generator style */}
+            <div className="my-6">
+              <h3 className="text-center text-xs font-bold uppercase tracking-wide text-slate-500 mb-2">
+                Q{currentIdx + 1} Visual Model: {currentQuestion.topic}
+              </h3>
+              <VisualAsset type={currentQuestion.visualType || 'kinematics_vt'} />
+            </div>
 
-            <p className="mb-5 text-base text-slate-200 leading-relaxed font-medium">{currentQuestion.prompt}</p>
-
-            <div className="grid gap-2.5">
-              {currentQuestion.options.map((opt, i) => {
-                let btnStyle = "bg-slate-950 border-slate-800 text-slate-300 hover:border-slate-700 hover:bg-slate-800/50";
-                if (selectedOption !== null) {
-                  if (i === currentQuestion.correctAnswer) {
-                    btnStyle = "bg-emerald-950/80 border-emerald-600 text-emerald-200 font-medium";
-                  } else if (i === selectedOption) {
-                    btnStyle = "bg-rose-950/80 border-rose-600 text-rose-200";
-                  } else {
-                    btnStyle = "opacity-50 bg-slate-950 border-slate-900 text-slate-500";
+            {/* Options layout matching Exam Generator */}
+            <div className="mt-6 mb-4">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Choose Your Answer (Q{currentIdx + 1}):</h4>
+              <div className="grid gap-2.5">
+                {currentQuestion.options.map((opt, i) => {
+                  let optionStyle = "border-slate-200 bg-white text-slate-700 hover:bg-slate-50";
+                  if (isAnswerChecked) {
+                    if (i === currentQuestion.correctAnswer) {
+                      optionStyle = "border-emerald-500 bg-emerald-50/50 text-emerald-900 font-medium";
+                    } else if (i === selectedOption) {
+                      optionStyle = "border-rose-300 bg-rose-50/30 text-rose-900";
+                    }
+                  } else if (selectedOption === i) {
+                    optionStyle = "border-blue-500 bg-blue-50/30 text-blue-900";
                   }
-                }
 
-                return (
-                  <button
-                    key={i}
-                    disabled={selectedOption !== null}
-                    onClick={() => handleAnswer(i)}
-                    className={`p-3.5 border rounded-xl text-left transition-all flex items-start gap-3.5 ${btnStyle}`}
-                  >
-                    <span className="font-mono font-bold text-xs px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-300 mt-0.5">
-                      {OPTION_LETTERS[i]}
-                    </span>
-                    <span className="text-sm leading-normal flex-1">{opt}</span>
-                  </button>
-                );
-              })}
+                  return (
+                    <label
+                      key={i}
+                      className={`flex items-start gap-3 p-3.5 border rounded-lg cursor-pointer transition-all ${optionStyle}`}
+                    >
+                      <input
+                        type="radio"
+                        name={`question-${currentIdx}`}
+                        disabled={isAnswerChecked}
+                        checked={selectedOption === i}
+                        onChange={() => setSelectedOption(i)}
+                        className="mt-1 text-blue-600 focus:ring-blue-500"
+                      />
+                      <span className="text-sm leading-normal">
+                        <strong className="font-semibold">{OPTION_LETTERS[i]})</strong> {opt}
+                      </span>
+                    </label>
+                  );
+                })}
+              </div>
             </div>
 
-            {feedback && (
-              <div className="mt-5 p-4 bg-slate-950 border border-slate-800 rounded-xl animate-fadeIn">
-                <p className="mb-3 text-sm text-slate-300 leading-relaxed">{feedback}</p>
+            {/* Action Buttons */}
+            {!isAnswerChecked ? (
+              <button
+                disabled={selectedOption === null}
+                onClick={handleCheckAnswer}
+                className={`mt-4 px-6 py-2.5 rounded-lg font-medium text-sm transition-all shadow-sm ${
+                  selectedOption !== null
+                    ? 'bg-slate-900 hover:bg-slate-800 text-white cursor-pointer'
+                    : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                }`}
+              >
+                Check Answer (Q{currentIdx + 1})
+              </button>
+            ) : (
+              <div className="mt-4 space-y-4 animate-fadeIn">
+                {/* Expandable Solution Accordion */}
+                <div className="border border-slate-200 rounded-lg overflow-hidden">
+                  <button
+                    onClick={() => setShowExplanation(!showExplanation)}
+                    className="w-full px-4 py-3 bg-slate-50 hover:bg-slate-100 flex justify-between items-center text-left text-sm font-medium text-slate-700 transition-colors"
+                  >
+                    <span>{showExplanation ? '▾' : '▸'} View Solution & Explanation — Question {currentIdx + 1}</span>
+                    <span className="text-xs text-slate-400 font-mono">{showExplanation ? 'Hide' : 'Expand'}</span>
+                  </button>
+                  {showExplanation && (
+                    <div className="p-4 bg-white text-sm text-slate-600 border-t border-slate-200 leading-relaxed">
+                      <p className="font-semibold text-slate-800 mb-1">
+                        {selectedOption === currentQuestion.correctAnswer ? 'Correct!' : 'Incorrect.'}
+                      </p>
+                      {currentQuestion.explanation}
+                    </div>
+                  )}
+                </div>
+
                 <button
                   onClick={nextQuestion}
-                  className="w-full bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium py-2.5 rounded-lg transition-all shadow-md"
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-lg transition-all shadow"
                 >
-                  {currentIdx < topicQuestions.length - 1 ? 'Next Question →' : 'View Report Card →'}
+                  {currentIdx < topicQuestions.length - 1 ? 'Next Question →' : 'View Assessment Report Card →'}
                 </button>
               </div>
             )}
