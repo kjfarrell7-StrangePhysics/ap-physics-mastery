@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { QUESTION_BANK, TOPICS, Question } from './questions';
+import { QUESTION_BANK, TOPICS } from './questions';
 import { VisualAsset } from './VisualAsset';
 
 export default function App() {
@@ -7,6 +7,7 @@ export default function App() {
   const [currentIdx, setCurrentIdx] = useState(0);
   const [results, setResults] = useState<{ [tag: string]: { correct: number; total: number } }>({});
   const [feedback, setFeedback] = useState<string | null>(null);
+  const [isFinished, setIsFinished] = useState(false);
 
   const topicQuestions = QUESTION_BANK.filter((q) => q.topic === selectedTopic);
   const currentQuestion = topicQuestions[currentIdx];
@@ -31,9 +32,15 @@ export default function App() {
     if (currentIdx < topicQuestions.length - 1) {
       setCurrentIdx(currentIdx + 1);
     } else {
-      setSelectedTopic(null);
-      setCurrentIdx(0);
+      setIsFinished(true);
     }
+  };
+
+  const reset = () => {
+    setIsFinished(false);
+    setSelectedTopic(null);
+    setCurrentIdx(0);
+    setFeedback(null);
   };
 
   return (
@@ -50,6 +57,17 @@ export default function App() {
               </button>
             ))}
           </div>
+        </div>
+      ) : isFinished ? (
+        <div className="max-w-2xl mx-auto">
+          <h2 className="text-2xl font-bold mb-4">Topic Report Card</h2>
+          {Object.entries(results).map(([tag, data]) => (
+            <div key={tag} className="mb-2 p-3 bg-slate-800 rounded">
+              <span className="font-bold">{tag}: </span>
+              {Math.round((data.correct / data.total) * 100)}% accuracy
+            </div>
+          ))}
+          <button onClick={reset} className="mt-6 bg-blue-600 px-6 py-2 rounded">Back to Topics</button>
         </div>
       ) : (
         <div className="max-w-2xl mx-auto">
