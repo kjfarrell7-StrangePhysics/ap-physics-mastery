@@ -1,228 +1,73 @@
 import React from 'react';
 
-export type VisualType =
-  | 'kinematics_graph'
-  | 'free_body_diagram'
-  | 'circuit_diagram'
-  | 'energy_bar_chart'
-  | 'wave_interference';
-
-export interface VisualData {
-  // Kinematics Graph
-  graphType?: 'vt' | 'xt';
-  acceleration?: number;
-  // Free Body Diagram
-  mass?: number;
-  inclineAngle?: number;
-  mu?: number;
-  // Circuit Diagram
-  voltage?: number;
-  resistorValues?: number[];
-  // Energy Bar Chart
-  initialK?: number;
-  initialU?: number;
-  finalK?: number;
-  finalU?: number;
-  // Wave
-  frequency?: number;
-}
-
 interface VisualAssetProps {
-  type: VisualType;
-  data?: VisualData;
+  type: string;
 }
 
-export const VisualAsset: React.FC<VisualAssetProps> = ({ type, data = {} }) => {
+export const VisualAsset: React.FC<VisualAssetProps> = ({ type }) => {
   return (
-    <div style={styles.visualWrapper}>
-      {type === 'kinematics_graph' && <KinematicsGraph graphType={data.graphType || 'vt'} />}
-      {type === 'free_body_diagram' && <FreeBodyDiagram inclineAngle={data.inclineAngle ?? 30} />}
-      {type === 'circuit_diagram' && <CircuitDiagram voltage={data.voltage ?? 12} resistors={data.resistorValues || [4, 8]} />}
-      {type === 'energy_bar_chart' && <EnergyBarChart />}
-      {type === 'wave_interference' && <WaveInterference />}
+    <div className="w-full bg-slate-900 rounded-xl p-4 my-4 flex flex-col items-center justify-center border border-slate-800 shadow-inner overflow-x-auto">
+      <svg viewBox="0 0 500 250" className="w-full max-w-lg h-auto">
+        {/* Background Grid */}
+        <defs>
+          <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+            <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#334155" strokeWidth="0.5" strokeOpacity="0.5" />
+          </pattern>
+        </defs>
+        <rect width="500" height="250" fill="url(#grid)" rx="8" />
+
+        {/* Axes */}
+        <line x1="50" y1="210" x2="450" y2="210" stroke="#94a3b8" strokeWidth="2" />
+        <line x1="50" y1="30" x2="50" y2="210" stroke="#94a3b8" strokeWidth="2" />
+
+        {/* Axis Labels */}
+        <text x="450" y="230" fill="#94a3b8" fontSize="12" textAnchor="end" fontFamily="sans-serif">t (s)</text>
+        <text x="30" y="40" fill="#94a3b8" fontSize="12" textAnchor="middle" fontFamily="sans-serif">v</text>
+
+        {/* Conditional Visual Asset Content */}
+        {type === 'kinematics_vt' && (
+          <>
+            <path d="M 50 170 L 410 70" fill="none" stroke="#3b82f6" strokeWidth="3" />
+            <circle cx="50" cy="170" r="4" fill="#60a5fa" />
+            <circle cx="410" cy="70" r="4" fill="#60a5fa" />
+            <text x="230" y="110" fill="#60a5fa" fontSize="12" fontWeight="bold">Constant Acceleration (Slope = a)</text>
+          </>
+        )}
+
+        {type === 'projectile_trajectory' && (
+          <>
+            <path d="M 50 210 Q 250 10 450 210" fill="none" stroke="#ef4444" strokeWidth="3" strokeDasharray="5,5" />
+            <text x="250" y="80" fill="#f87171" fontSize="12" fontWeight="bold" textAnchor="middle">Parabolic Trajectory</text>
+          </>
+        )}
+
+        {type === 'energy_bar_chart' && (
+          <>
+            <rect x="100" y="90" width="40" height="120" fill="#3b82f6" rx="4" />
+            <text x="120" y="80" fill="#93c5fd" fontSize="10" textAnchor="middle">K</text>
+            <rect x="160" y="150" width="40" height="60" fill="#10b981" rx="4" />
+            <text x="180" y="140" fill="#6ee7b7" fontSize="10" textAnchor="middle">U_g</text>
+            <rect x="220" y="190" width="40" height="20" fill="#f59e0b" rx="4" />
+            <text x="240" y="180" fill="#fcd34d" fontSize="10" textAnchor="middle">U_s</text>
+            <text x="320" y="120" fill="#f8fafc" fontSize="12" fontWeight="bold">Conservation of Energy</text>
+          </>
+        )}
+
+        {type === 'wave_interference' && (
+          <g>
+            <path d="M 50 120 Q 125 90 200 120 T 350 120 T 500 120" fill="none" stroke="#06b6d4" strokeWidth="2" />
+            <path d="M 50 120 Q 125 150 200 120 T 350 120 T 500 120" fill="none" stroke="#ec4899" strokeWidth="2" />
+            <text x="250" y="40" fill="#67e8f9" fontSize="12" fontWeight="bold" textAnchor="middle">Constructive / Destructive Interference</text>
+          </g>
+        )}
+
+        {type === 'velocity_time' && (
+          <>
+            <path d="M 60 190 Q 250 190 460 50" fill="none" stroke="#16a34a" strokeWidth="3" />
+            <text x="220" y="120" fontSize="10" fill="#16a34a" fontWeight="bold">Increasing Speed ($a &gt; 0$)</text>
+          </>
+        )}
+      </svg>
     </div>
   );
-};
-
-// ----------------------------------------------------------------------
-// 1. Kinematics Graph SVG (Velocity-Time / Position-Time)
-// ----------------------------------------------------------------------
-const KinematicsGraph: React.FC<{ graphType: 'vt' | 'xt' }> = ({ graphType }) => {
-  return (
-    <svg viewBox="0 0 500 240" style={styles.svg}>
-      <rect x="0" y="0" width="500" height="240" fill="#f8fafc" rx="8" />
-      <text x="250" y="24" textAnchor="middle" fontSize="13" fontWeight="bold" fill="#0f172a">
-        {graphType === 'vt' ? 'Velocity vs. Time Graph ($v(t)$)' : 'Position vs. Time Graph ($x(t)$)'}
-      </text>
-
-      {/* Axes */}
-      <line x1="60" y1="40" x2="60" y2="200" stroke="#475569" strokeWidth="2" />
-      <line x1="60" y1="200" x2="470" y2="200" stroke="#475569" strokeWidth="2" />
-      
-      <text x="30" y="120" fontSize="10" fontWeight="bold" fill="#475569" transform="rotate(-90 30 120)" textAnchor="middle">
-        {graphType === 'vt' ? 'Velocity (m/s)' : 'Position (m)'}
-      </text>
-      <text x="265" y="225" fontSize="10" fontWeight="bold" fill="#475569" textAnchor="middle">
-        Time ($t$) (s)
-      </text>
-
-      {/* Grid Lines */}
-      {[80, 120, 160, 200, 240, 280, 320, 360, 400, 440].map((x, i) => (
-        <line key={i} x1={x} y1="40" x2={x} y2="200" stroke="#e2e8f0" strokeDasharray="2 2" />
-      ))}
-      {[70, 100, 130, 170].map((y, i) => (
-        <line key={i} x1="60" y1={y} x2="470" y2={y} stroke="#e2e8f0" strokeDasharray="2 2" />
-      ))}
-
-      {/* Plot Curve / Lines */}
-      {graphType === 'vt' ? (
-        <>
-          <path d="M 60 170 L 180 80 L 340 80 L 460 170" fill="none" stroke="#0284c7" strokeWidth="3" />
-          <text x="120" y="135" fontSize="10" fill="#0284c7" fontWeight="bold">Constant Acceleration</text>
-          <text x="260" y="70" fontSize="10" fill="#0284c7" fontWeight="bold">Constant Velocity ($v$)</text>
-          <text x="400" y="145" fontSize="10" fill="#0284c7" fontWeight="bold">Deceleration</text>
-        </>
-      ) : (
-        <>
-          <path d="M 60 190 Q 250 190 460 50" fill="none" stroke="#16a34a" strokeWidth="3" />
-          <text x="220" y="120" fontSize="10" fill="#16a34a" fontWeight="bold">Increasing Speed ($a > 0$)</text>
-        </>
-      )}
-    </svg>
-  );
-};
-
-// ----------------------------------------------------------------------
-// 2. Free-Body Diagram SVG (Incline Plane)
-// ----------------------------------------------------------------------
-const FreeBodyDiagram: React.FC<{ inclineAngle: number }> = ({ inclineAngle }) => {
-  return (
-    <svg viewBox="0 0 450 230" style={styles.svg}>
-      <rect x="0" y="0" width="450" height="230" fill="#f8fafc" rx="8" />
-      <text x="225" y="22" textAnchor="middle" fontSize="13" fontWeight="bold" fill="#0f172a">
-        Free-Body Diagram: Block on an Incline ($\theta = {inclineAngle}^\circ$)
-      </text>
-
-      {/* Incline Plane */}
-      <polygon points="60,190 390,190 390,165" fill="#cbd5e1" />
-      <line x1="60" y1="190" x2="390" y2="165" stroke="#334155" strokeWidth="3" />
-
-      {/* Block */}
-      <g transform="translate(200, 142) rotate(-15)">
-        <rect x="-25" y="-20" width="50" height="40" fill="#0284c7" rx="4" stroke="#0369a1" strokeWidth="2" />
-        <text x="0" y="5" textAnchor="middle" fontSize="11" fontWeight="bold" fill="#ffffff">m</text>
-      </g>
-
-      {/* Vectors */}
-      {/* Weight Vector ($mg$ straight down) */}
-      <line x1="210" y1="150" x2="210" y2="210" stroke="#dc2626" strokeWidth="2.5" markerEnd="url(#arrow)" />
-      <text x="225" y="205" fontSize="11" fontWeight="bold" fill="#dc2626">$m\\vec{g}$</text>
-
-      {/* Normal Force ($F_N$ perpendicular to surface) */}
-      <line x1="210" y1="150" x2="180" y2="90" stroke="#16a34a" strokeWidth="2.5" />
-      <text x="165" y="85" fontSize="11" fontWeight="bold" fill="#16a34a">$\\vec{F}_N$</text>
-
-      {/* Friction Vector ($f$ parallel up incline) */}
-      <line x1="210" y1="150" x2="255" y2="138" stroke="#d97706" strokeWidth="2.5" />
-      <text x="270" y="135" fontSize="11" fontWeight="bold" fill="#d97706">$\\vec{f}$</text>
-    </svg>
-  );
-};
-
-// ----------------------------------------------------------------------
-// 3. Circuit Diagram SVG
-// ----------------------------------------------------------------------
-const CircuitDiagram: React.FC<{ voltage: number; resistors: number[] }> = ({ voltage, resistors }) => {
-  return (
-    <svg viewBox="0 0 480 240" style={styles.svg}>
-      <rect x="0" y="0" width="480" height="240" fill="#f8fafc" rx="8" />
-      <text x="240" y="22" textAnchor="middle" fontSize="12" fontWeight="bold" fill="#0f172a">
-        Series-Parallel Combination Circuit ($V = {voltage}\text{ V}$)
-      </text>
-
-      {/* Circuit Wires Loop */}
-      <rect x="80" y="50" width="320" height="140" fill="none" stroke="#475569" strokeWidth="2.5" rx="6" />
-
-      {/* Voltage Source symbol */}
-      <line x1="80" y1="110" x2="80" y2="130" stroke="#ef4444" strokeWidth="4" />
-      <line x1="74" y1="115" x2="86" y2="115" stroke="#ef4444" strokeWidth="2" />
-      <text x="50" y="124" fontSize="11" fontWeight="bold" fill="#ef4444">{voltage}V</text>
-
-      {/* Resistor 1 */}
-      <path d="M 160 50 L 170 42 L 190 58 L 210 42 L 230 58 L 250 42 L 270 50" fill="none" stroke="#0284c7" strokeWidth="2.5" />
-      <text x="215" y="32" fontSize="11" fontWeight="bold" fill="#0284c7">$R_1 = {resistors[0]}\\Omega$</text>
-
-      {/* Resistor 2 */}
-      <path d="M 300 120 L 308 110 L 324 130 L 340 110 L 356 130 L 372 110 L 380 120" fill="none" stroke="#0284c7" strokeWidth="2.5" />
-      <text x="395" y="124" fontSize="11" fontWeight="bold" fill="#0284c7">$R_2 = {resistors[1]}\\Omega$</text>
-    </svg>
-  );
-};
-
-// ----------------------------------------------------------------------
-// 4. Energy Bar Chart (LOL Chart) SVG
-// ----------------------------------------------------------------------
-const EnergyBarChart: React.FC = () => {
-  return (
-    <svg viewBox="0 0 460 230" style={styles.svg}>
-      <rect x="0" y="0" width="460" height="230" fill="#f8fafc" rx="8" />
-      <text x="230" y="22" textAnchor="middle" fontSize="12" fontWeight="bold" fill="#0f172a">
-        Conservation of Energy Bar Chart ($E_k + E_{s} + E_{g} = \\text{Const}$)
-      </text>
-
-      {/* System State Axis */}
-      <line x1="60" y1="180" x2="420" y2="180" stroke="#334155" strokeWidth="2" />
-
-      {/* Initial State Bars */}
-      <rect x="100" y="80" width="35" height="100" fill="#3b82f6" rx="3" />
-      <text x="117.5" y="195" fontSize="10" fontWeight="bold" fill="#1e293b">Initial ($K_1$)</text>
-
-      <rect x="145" y="150" width="35" height="30" fill="#10b981" rx="3" />
-      <text x="162.5" y="195" fontSize="10" fontWeight="bold" fill="#1e293b">($U_{g1}$)</text>
-
-      {/* Final State Bars */}
-      <rect x="280" y="160" width="35" height="20" fill="#3b82f6" rx="3" />
-      <text x="297.5" y="195" fontSize="10" fontWeight="bold" fill="#1e293b">Final ($K_2$)</text>
-
-      <rect x="325" y="70" width="35" height="110" fill="#10b981" rx="3" />
-      <text x="342.5" y="195" fontSize="10" fontWeight="bold" fill="#1e293b">($U_{g2}$)</text>
-    </svg>
-  );
-};
-
-// ----------------------------------------------------------------------
-// 5. Wave Interference SVG
-// ----------------------------------------------------------------------
-const WaveInterference: React.FC = () => {
-  return (
-    <svg viewBox="0 0 460 230" style={styles.svg}>
-      <rect x="0" y="0" width="460" height="230" fill="#f8fafc" rx="8" />
-      <text x="230" y="22" textAnchor="middle" fontSize="12" fontWeight="bold" fill="#0f172a">
-        Constructive Wave Interference
-      </text>
-      <line x1="40" y1="115" x2="420" y2="115" stroke="#94a3b8" strokeDasharray="3 3" />
-      <path d="M 40 115 Q 100 50 160 115 T 280 115 T 400 115" fill="none" stroke="#0284c7" strokeWidth="2.5" />
-      <path d="M 40 115 Q 100 20 160 115 T 280 115 T 400 115" fill="none" stroke="#ef4444" strokeWidth="2.5" strokeDasharray="4 2" />
-      <text x="230" y="200" textAnchor="middle" fontSize="11" fontWeight="bold" fill="#1e293b">
-        Resultant Amplitude equals sum of component waves ($A_{net} = A_1 + A_2$)
-      </text>
-    </svg>
-  );
-};
-
-const styles: Record<string, React.CSSProperties> = {
-  visualWrapper: {
-    margin: '16px 0',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: '100%',
-  },
-  svg: {
-    width: '100%',
-    maxHeight: '260px',
-    borderRadius: '8px',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-    border: '1px solid #e2e8f0',
-  },
 };
