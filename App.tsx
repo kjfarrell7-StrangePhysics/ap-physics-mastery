@@ -4,7 +4,6 @@ import { VisualAsset } from './VisualAsset';
 
 const OPTION_LETTERS = ['A', 'B', 'C', 'D'];
 
-// Helper to clean raw LaTeX/dollar sign artifacts from questions
 const cleanText = (text: string) => {
   if (!text) return '';
   return text.replace(/\$/g, '');
@@ -60,13 +59,13 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 p-6 flex flex-col items-center font-sans">
-      <div className="w-full max-w-3xl bg-white border border-slate-200 rounded-xl shadow-sm p-6 md:p-8">
+      <div className="w-full max-w-2xl bg-white border border-slate-200 rounded-xl shadow-sm p-6">
         
         {/* Header */}
-        <header className="mb-6 flex justify-between items-center border-b border-slate-100 pb-4">
-          <h1 className="text-xl font-bold text-slate-800">AP Physics 1 Mastery Assessment</h1>
+        <header className="mb-4 flex justify-between items-center border-b border-slate-100 pb-3">
+          <h1 className="text-lg font-bold text-slate-800">AP Physics 1 Mastery Assessment</h1>
           {selectedTopic && !isFinished && (
-            <span className="text-xs font-semibold uppercase px-3 py-1 bg-slate-100 rounded-full text-slate-600">
+            <span className="text-xs font-semibold uppercase px-2.5 py-0.5 bg-slate-100 rounded-full text-slate-600">
               Question {currentIdx + 1} of {topicQuestions.length}
             </span>
           )}
@@ -74,31 +73,31 @@ export default function App() {
 
         {!selectedTopic ? (
           <div>
-            <h2 className="text-lg font-semibold mb-4 text-slate-700">Select an Exam Topic:</h2>
-            <div className="grid gap-3">
+            <h2 className="text-md font-semibold mb-3 text-slate-700">Select an Exam Topic:</h2>
+            <div className="grid gap-2.5">
               {TOPICS.map((t) => (
                 <button
                   key={t}
                   onClick={() => setSelectedTopic(t)}
-                  className="p-4 bg-white border border-slate-200 rounded-lg hover:border-blue-500 hover:bg-blue-50/30 text-left transition-all font-medium shadow-sm flex justify-between items-center text-slate-700"
+                  className="p-3.5 bg-white border border-slate-200 rounded-lg hover:border-blue-500 hover:bg-blue-50/30 text-left transition-all font-medium shadow-sm flex justify-between items-center text-slate-700 text-sm"
                 >
                   <span>{t}</span>
-                  <span className="text-blue-600 text-sm font-semibold">Start Exam →</span>
+                  <span className="text-blue-600 font-semibold">Start Exam →</span>
                 </button>
               ))}
             </div>
           </div>
         ) : isFinished ? (
           <div>
-            <h2 className="text-2xl font-bold mb-2 text-slate-800">Assessment Report Card</h2>
-            <p className="text-sm text-slate-500 mb-6">Performance summary for {selectedTopic}:</p>
-            <div className="grid gap-3 mb-6">
+            <h2 className="text-xl font-bold mb-2 text-slate-800">Assessment Report Card</h2>
+            <p className="text-xs text-slate-500 mb-4">Performance summary for {selectedTopic}:</p>
+            <div className="grid gap-2.5 mb-5">
               {Object.entries(results).map(([tag, data]) => {
                 const pct = Math.round((data.correct / data.total) * 100);
                 return (
-                  <div key={tag} className="flex justify-between items-center p-4 bg-slate-50 border border-slate-200 rounded-lg">
-                    <span className="font-mono text-sm text-slate-700 capitalize">{tag.replace(/_/g, ' ')}</span>
-                    <span className={`text-sm font-bold px-3 py-1 rounded-md ${pct >= 70 ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}`}>
+                  <div key={tag} className="flex justify-between items-center p-3 bg-slate-50 border border-slate-200 rounded-lg text-sm">
+                    <span className="font-mono text-slate-700 capitalize">{tag.replace(/_/g, ' ')}</span>
+                    <span className={`font-bold px-2.5 py-0.5 rounded ${pct >= 70 ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}`}>
                       {pct}% ({data.correct}/{data.total})
                     </span>
                   </div>
@@ -107,32 +106,32 @@ export default function App() {
             </div>
             <button
               onClick={reset}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-lg transition-all shadow"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-lg transition-all shadow text-sm"
             >
               Return to Topic Selection
             </button>
           </div>
         ) : (
           <div>
-            <div className="mb-4">
+            <div className="mb-3">
               <span className="text-xs uppercase tracking-wider text-slate-400 font-bold">Question {currentIdx + 1}</span>
-              <p className="mt-2 text-base text-slate-800 leading-relaxed font-normal">
+              <p className="mt-1 text-sm text-slate-800 leading-relaxed font-normal">
                 {cleanText(currentQuestion.prompt)}
               </p>
             </div>
 
             {/* Compact Visual Graph Box */}
-            <div className="my-4">
+            <div className="my-3">
               <h3 className="text-center text-xs font-bold uppercase tracking-wide text-slate-500 mb-1">
                 Q{currentIdx + 1} Visual Model: {currentQuestion.topic}
               </h3>
-              <VisualAsset type={currentQuestion.visualType || 'incline_quadratic'} />
+              <VisualAsset type={currentQuestion.visualType || 'velocity_triangle'} />
             </div>
 
-            {/* Options layout */}
-            <div className="mt-5 mb-4">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Choose Your Answer (Q{currentIdx + 1}):</h4>
-              <div className="grid gap-2.5">
+            {/* Vertical Stacked Options Layout */}
+            <div className="mt-4 mb-4">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Choose Your Answer (Q{currentIdx + 1}):</h4>
+              <div className="flex flex-col gap-2 w-full">
                 {currentQuestion.options.map((opt, i) => {
                   let optionStyle = "border-slate-200 bg-white text-slate-700 hover:bg-slate-50";
                   if (isAnswerChecked) {
@@ -148,7 +147,7 @@ export default function App() {
                   return (
                     <label
                       key={i}
-                      className={`flex items-start gap-3 p-3.5 border rounded-lg cursor-pointer transition-all ${optionStyle}`}
+                      className={`flex items-start gap-3 p-3 border rounded-lg cursor-pointer transition-all w-full ${optionStyle}`}
                     >
                       <input
                         type="radio"
@@ -156,7 +155,7 @@ export default function App() {
                         disabled={isAnswerChecked}
                         checked={selectedOption === i}
                         onChange={() => setSelectedOption(i)}
-                        className="mt-1 text-blue-600 focus:ring-blue-500"
+                        className="mt-0.5 text-blue-600 focus:ring-blue-500"
                       />
                       <span className="text-sm leading-normal">
                         <strong className="font-semibold">{OPTION_LETTERS[i]})</strong> {cleanText(opt)}
@@ -172,7 +171,7 @@ export default function App() {
               <button
                 disabled={selectedOption === null}
                 onClick={handleCheckAnswer}
-                className={`mt-3 px-6 py-2.5 rounded-lg font-medium text-sm transition-all shadow-sm ${
+                className={`mt-2 px-5 py-2 rounded-lg font-medium text-sm transition-all shadow-sm ${
                   selectedOption !== null
                     ? 'bg-slate-900 hover:bg-slate-800 text-white cursor-pointer'
                     : 'bg-slate-200 text-slate-400 cursor-not-allowed'
@@ -181,18 +180,18 @@ export default function App() {
                 Check Answer (Q{currentIdx + 1})
               </button>
             ) : (
-              <div className="mt-4 space-y-4 animate-fadeIn">
+              <div className="mt-3 space-y-3 animate-fadeIn">
                 {/* Expandable Solution Accordion */}
                 <div className="border border-slate-200 rounded-lg overflow-hidden">
                   <button
                     onClick={() => setShowExplanation(!showExplanation)}
-                    className="w-full px-4 py-3 bg-slate-50 hover:bg-slate-100 flex justify-between items-center text-left text-sm font-medium text-slate-700 transition-colors"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 hover:bg-slate-100 flex justify-between items-center text-left text-xs font-medium text-slate-700 transition-colors"
                   >
                     <span>{showExplanation ? '▾' : '▸'} View Solution & Explanation — Question {currentIdx + 1}</span>
-                    <span className="text-xs text-slate-400 font-mono">{showExplanation ? 'Hide' : 'Expand'}</span>
+                    <span className="text-slate-400 font-mono">{showExplanation ? 'Hide' : 'Expand'}</span>
                   </button>
                   {showExplanation && (
-                    <div className="p-4 bg-white text-sm text-slate-600 border-t border-slate-200 leading-relaxed">
+                    <div className="p-3.5 bg-white text-xs text-slate-600 border-t border-slate-200 leading-relaxed">
                       <p className="font-semibold text-slate-800 mb-1">
                         {selectedOption === currentQuestion.correctAnswer ? 'Correct!' : 'Incorrect.'}
                       </p>
@@ -203,7 +202,7 @@ export default function App() {
 
                 <button
                   onClick={nextQuestion}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-lg transition-all shadow"
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-lg transition-all shadow text-sm"
                 >
                   {currentIdx < topicQuestions.length - 1 ? 'Next Question →' : 'View Assessment Report Card →'}
                 </button>
