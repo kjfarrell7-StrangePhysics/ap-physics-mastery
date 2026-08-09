@@ -4,6 +4,12 @@ import { VisualAsset } from './VisualAsset';
 
 const OPTION_LETTERS = ['A', 'B', 'C', 'D'];
 
+// Helper to clean raw LaTeX/dollar sign artifacts from questions
+const cleanText = (text: string) => {
+  if (!text) return '';
+  return text.replace(/\$/g, '');
+};
+
 export default function App() {
   const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
   const [currentIdx, setCurrentIdx] = useState(0);
@@ -54,7 +60,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 p-6 flex flex-col items-center font-sans">
-      <div className="w-full max-w-3xl bg-white border border-slate-200 rounded-xl shadow-sm p-8">
+      <div className="w-full max-w-3xl bg-white border border-slate-200 rounded-xl shadow-sm p-6 md:p-8">
         
         {/* Header */}
         <header className="mb-6 flex justify-between items-center border-b border-slate-100 pb-4">
@@ -110,19 +116,21 @@ export default function App() {
           <div>
             <div className="mb-4">
               <span className="text-xs uppercase tracking-wider text-slate-400 font-bold">Question {currentIdx + 1}</span>
-              <p className="mt-2 text-base text-slate-800 leading-relaxed font-normal">{currentQuestion.prompt}</p>
+              <p className="mt-2 text-base text-slate-800 leading-relaxed font-normal">
+                {cleanText(currentQuestion.prompt)}
+              </p>
             </div>
 
-            {/* Visual Graph Box matching Exam Generator style */}
-            <div className="my-6">
-              <h3 className="text-center text-xs font-bold uppercase tracking-wide text-slate-500 mb-2">
+            {/* Compact Visual Graph Box */}
+            <div className="my-4">
+              <h3 className="text-center text-xs font-bold uppercase tracking-wide text-slate-500 mb-1">
                 Q{currentIdx + 1} Visual Model: {currentQuestion.topic}
               </h3>
-              <VisualAsset type={currentQuestion.visualType || 'kinematics_vt'} />
+              <VisualAsset type={currentQuestion.visualType || 'incline_quadratic'} />
             </div>
 
-            {/* Options layout matching Exam Generator */}
-            <div className="mt-6 mb-4">
+            {/* Options layout */}
+            <div className="mt-5 mb-4">
               <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Choose Your Answer (Q{currentIdx + 1}):</h4>
               <div className="grid gap-2.5">
                 {currentQuestion.options.map((opt, i) => {
@@ -151,7 +159,7 @@ export default function App() {
                         className="mt-1 text-blue-600 focus:ring-blue-500"
                       />
                       <span className="text-sm leading-normal">
-                        <strong className="font-semibold">{OPTION_LETTERS[i]})</strong> {opt}
+                        <strong className="font-semibold">{OPTION_LETTERS[i]})</strong> {cleanText(opt)}
                       </span>
                     </label>
                   );
@@ -164,7 +172,7 @@ export default function App() {
               <button
                 disabled={selectedOption === null}
                 onClick={handleCheckAnswer}
-                className={`mt-4 px-6 py-2.5 rounded-lg font-medium text-sm transition-all shadow-sm ${
+                className={`mt-3 px-6 py-2.5 rounded-lg font-medium text-sm transition-all shadow-sm ${
                   selectedOption !== null
                     ? 'bg-slate-900 hover:bg-slate-800 text-white cursor-pointer'
                     : 'bg-slate-200 text-slate-400 cursor-not-allowed'
@@ -188,7 +196,7 @@ export default function App() {
                       <p className="font-semibold text-slate-800 mb-1">
                         {selectedOption === currentQuestion.correctAnswer ? 'Correct!' : 'Incorrect.'}
                       </p>
-                      {currentQuestion.explanation}
+                      {cleanText(currentQuestion.explanation)}
                     </div>
                   )}
                 </div>
