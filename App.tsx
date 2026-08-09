@@ -1,3 +1,4 @@
+import WaveInterference from './WaveInterference';
 import React, { useState, useMemo, useEffect } from 'react';
 import { allQuestions } from './questions';
 import { allFRQs } from './frqs';
