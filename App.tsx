@@ -1,216 +1,515 @@
-import React, { useState } from 'react';
-import { QUESTION_BANK, TOPICS } from './questions';
+import React, { useState, useMemo, useEffect } from 'react';
 import { VisualAsset } from './VisualAsset';
+import type { VisualType, VisualData } from './VisualAsset';
 
-const OPTION_LETTERS = ['A', 'B', 'C', 'D'];
+interface Question {
+  id: string;
+  topicId: string;
+  prompt: string;
+  options: string[];
+  correct_idx: number;
+  explanation: string;
+  visualType?: VisualType;
+  visualData?: VisualData;
+}
 
-const cleanText = (text: string) => {
-  if (!text) return '';
-  return text.replace(/\$/g, '');
-};
+interface Topic {
+  id: string;
+  title: string;
+  description: string;
+  questions: Question[];
+}
+
+const TOPICS: Topic[] = [
+  {
+    id: 'topic_1',
+    title: 'Topic 1: Mathematical & Analytical Tools for AP Physics 1',
+    description: 'Mastery of algebraic rearrangement, vector decomposition, unit analysis, and proportional reasoning required for success across all AP Physics 1 units.',
+    questions: [
+      {
+        id: 't1_q1',
+        topicId: 'topic_1',
+        prompt: 'Solve algebraically for the acceleration $a$ in the kinematic equation: $d = v_0 t + \\frac{1}{2} a t^2$',
+        options: [
+          '$a = \\frac{d - v_0 t}{2t^2}$',
+          '$a = \\frac{2(d - v_0 t)}{t^2}$',
+          '$a = \\frac{d}{t^2} - v_0$',
+          '$a = \\frac{2d}{t} - 2v_0$'
+        ],
+        correct_idx: 1,
+        explanation: 'Subtract $v_0 t$ from both sides ($d - v_0 t = \\frac{1}{2}at^2$), then multiply by 2 and divide by $t^2$ to isolate $a$.'
+      },
+      {
+        id: 't1_q2',
+        topicId: 'topic_1',
+        prompt: 'A vector $\\vec{F}$ has a magnitude of $50\\text{ N}$ and acts at an angle of $30^\\circ$ above the horizontal. What is the magnitude of the horizontal component $F_x$?',
+        options: [
+          '$50 \\sin(30^\\circ) \\approx 25\\text{ N}$',
+          '$50 \\cos(30^\\circ) \\approx 43.3\\text{ N}$',
+          '$50 \\tan(30^\\circ) \\approx 28.9\\text{ N}$',
+          '$50 / \\cos(30^\\circ) \\approx 57.7\\text{ N}$'
+        ],
+        correct_idx: 1,
+        explanation: 'The horizontal component of a vector is given by $F_x = F \\cos(\\theta)$. Therefore, $50 \\cos(30^\\circ) = 50 \\times \\frac{\\sqrt{3}}{2} \\approx 43.3\\text{ N}$.',
+        visualType: 'free_body_diagram',
+        visualData: { inclineAngle: 30 }
+      },
+      {
+        id: 't1_q3',
+        topicId: 'topic_1',
+        prompt: 'If the net force acting on an object of constant mass is doubled, how does the resulting acceleration change according to Newton\'s Second Law ($F_{net} = ma$)?',
+        options: [
+          'Acceleration is halved',
+          'Acceleration remains unchanged',
+          'Acceleration is quadrupled',
+          'Acceleration is doubled'
+        ],
+        correct_idx: 3,
+        explanation: 'Since mass is constant, force and acceleration are directly proportional ($a = F_{net} / m$). Doubling the net force doubles the acceleration.'
+      },
+      {
+        id: 't1_q4',
+        topicId: 'topic_1',
+        prompt: 'Convert a speed of $72\\text{ km/h}$ into standard SI base units ($\text{m/s}$).',
+        options: [
+          '$20\\text{ m/s}$',
+          '$25\\text{ m/s}$',
+          '$120\\text{ m/s}$',
+          '$7.2\\text{ m/s}$'
+        ],
+        correct_idx: 0,
+        explanation: 'Multiply by $1000\\text{ m/km}$ and divide by $3600\\text{ s/h}$ (or simply divide by 3.6): $72 / 3.6 = 20\\text{ m/s}$.'
+      }
+    ]
+  },
+  {
+    id: 'topic_2',
+    title: 'Topic 2: Kinematics (1D and 2D Motion)',
+    description: 'Analyzing position, velocity, and acceleration graphs along with projectile motion kinematics.',
+    questions: [
+      {
+        id: 't2_q1',
+        topicId: 'topic_2',
+        prompt: 'What physical quantity is represented by the slope of a velocity-time graph?',
+        options: [
+          'Position',
+          'Displacement',
+          'Acceleration',
+          'Jerk'
+        ],
+        correct_idx: 2,
+        explanation: 'The derivative of velocity with respect to time ($dv/dt$) represents acceleration.',
+        visualType: 'kinematics_graph',
+        visualData: { graphType: 'vt' }
+      }
+    ]
+  }
+];
+
+const PASSING_MASTERY_SCORE = 80; // 80% or higher (representing a 4 out of 5 mastery level)
 
 export default function App() {
-  const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
-  const [currentIdx, setCurrentIdx] = useState(0);
-  const [results, setResults] = useState<{ [tag: string]: { correct: number; total: number } }>({});
-  const [selectedOption, setSelectedOption] = useState<number | null>(null);
-  const [isAnswerChecked, setIsAnswerChecked] = useState(false);
-  const [showExplanation, setShowExplanation] = useState(false);
-  const [isFinished, setIsFinished] = useState(false);
+  const [view, setView] = useState<'welcome' | 'assessment' | 'tutorial' | 'dashboard'>('welcome');
+  const [activeTopicIndex, setActiveTopicIndex] = useState(0);
+  const [unlockedTopics, setUnlockedTopics] = useState<number[]>([0]); // Topic 1 unlocked initially
+  const [topicProgress, setTopicProgress] = useState<Record<number, { score: number; passed: boolean }>>({});
 
-  const topicQuestions = QUESTION_BANK.filter((q) => q.topic === selectedTopic);
-  const currentQuestion = topicQuestions[currentIdx];
+  // Assessment state
+  const [currentQIndex, setCurrentQIndex] = useState(0);
+  const [selectedOption, setselectedOption] = useState<number | null>(null);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [scoreCount, setScoreCount] = useState(0);
 
-  const handleCheckAnswer = () => {
-    if (selectedOption === null) return;
-    setIsAnswerChecked(true);
+  const currentTopic = TOPICS[activeTopicIndex];
 
-    const isCorrect = selectedOption === currentQuestion.correctAnswer;
-    const tag = currentQuestion.conceptTag;
-
-    setResults((prev) => ({
-      ...prev,
-      [tag]: {
-        correct: (prev[tag]?.correct || 0) + (isCorrect ? 1 : 0),
-        total: (prev[tag]?.total || 0) + 1,
-      },
-    }));
+  const startAssessment = (topicIdx: number) => {
+    setActiveTopicIndex(topicIdx);
+    setCurrentQIndex(0);
+    setselectedOption(null);
+    setIsSubmitted(false);
+    setScoreCount(0);
+    setView('assessment');
   };
 
-  const nextQuestion = () => {
-    setSelectedOption(null);
-    setIsAnswerChecked(false);
-    setShowExplanation(false);
-    if (currentIdx < topicQuestions.length - 1) {
-      setCurrentIdx(currentIdx + 1);
+  const handleAnswerSubmit = () => {
+    if (selectedOption === null) return;
+    const isCorrect = selectedOption === currentTopic.questions[currentQIndex].correct_idx;
+    if (isCorrect) setScoreCount(prev => prev + 1);
+    setIsSubmitted(true);
+  };
+
+  const handleNextQuestion = () => {
+    if (currentQIndex < currentTopic.questions.length - 1) {
+      setCurrentQIndex(prev => prev + 1);
+      setselectedOption(null);
+      setIsSubmitted(false);
     } else {
-      setIsFinished(true);
+      // Assessment finished, calculate score percentage
+      const finalCorrect = scoreCount + (selectedOption === currentTopic.questions[currentQIndex].correct_idx ? 1 : 0);
+      const scorePct = Math.round((finalCorrect / currentTopic.questions.length) * 100);
+      const passed = scorePct >= PASSING_MASTERY_SCORE;
+
+      setTopicProgress(prev => ({
+        ...prev,
+        [activeTopicIndex]: { score: scorePct, passed }
+      }));
+
+      if (passed && activeTopicIndex + 1 < TOPICS.length) {
+        setUnlockedTopics(prev => Array.from(new Set([...prev, activeTopicIndex + 1])));
+      }
+
+      if (passed) {
+        setView('dashboard');
+      } else {
+        setView('tutorial');
+      }
     }
   };
 
-  const reset = () => {
-    setIsFinished(false);
-    setSelectedTopic(null);
-    setCurrentIdx(0);
-    setSelectedOption(null);
-    setIsAnswerChecked(false);
-    setShowExplanation(false);
-  };
-
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 p-6 flex flex-col items-center font-sans">
-      <div className="w-full max-w-2xl bg-white border border-slate-200 rounded-xl shadow-sm p-6">
-        
-        {/* Header */}
-        <header className="mb-4 flex justify-between items-center border-b border-slate-100 pb-3">
-          <h1 className="text-lg font-bold text-slate-800">AP Physics 1 Mastery Assessment</h1>
-          {selectedTopic && !isFinished && (
-            <span className="text-xs font-semibold uppercase px-2.5 py-0.5 bg-slate-100 rounded-full text-slate-600">
-              Question {currentIdx + 1} of {topicQuestions.length}
-            </span>
-          )}
-        </header>
+    <div style={styles.container}>
+      <header style={styles.header}>
+        <h1 style={styles.title}>⚡ AP Physics 1 Mastery Hub</h1>
+        <p style={styles.subtitle}>Adaptive Diagnostic & Differentiated Learning Platform</p>
+      </header>
 
-        {!selectedTopic ? (
-          <div>
-            <h2 className="text-md font-semibold mb-3 text-slate-700">Select an Exam Topic:</h2>
-            <div className="grid gap-2.5">
-              {TOPICS.map((t) => (
-                <button
-                  key={t}
-                  onClick={() => setSelectedTopic(t)}
-                  className="p-3.5 bg-white border border-slate-200 rounded-lg hover:border-blue-500 hover:bg-blue-50/30 text-left transition-all font-medium shadow-sm flex justify-between items-center text-slate-700 text-sm"
-                >
-                  <span>{t}</span>
-                  <span className="text-blue-600 font-semibold">Start Exam →</span>
-                </button>
-              ))}
-            </div>
+      {/* 1. WELCOME SCREEN */}
+      {view === 'welcome' && (
+        <div style={styles.card}>
+          <div style={styles.bannerBox}>
+            <h2 style={{ margin: '0 0 10px 0', color: '#0369a1' }}>Welcome to AP Physics 1 Mastery!</h2>
+            <p style={{ margin: 0, lineHeight: '1.6', color: '#334155' }}>
+              The purpose of this application is to <strong>diagnose your knowledge level</strong> on core physics concepts and 
+              differentiate a targeted tutorial to help you master each unit up to a <strong>4 out of 5 proficiency level</strong>. 
+              Once you pass the assessment exam for a topic, you will automatically unlock and advance to the next topic in the curriculum.
+            </p>
           </div>
-        ) : isFinished ? (
-          <div>
-            <h2 className="text-xl font-bold mb-2 text-slate-800">Assessment Report Card</h2>
-            <p className="text-xs text-slate-500 mb-4">Performance summary for {selectedTopic}:</p>
-            <div className="grid gap-2.5 mb-5">
-              {Object.entries(results).map(([tag, data]) => {
-                const pct = Math.round((data.correct / data.total) * 100);
-                return (
-                  <div key={tag} className="flex justify-between items-center p-3 bg-slate-50 border border-slate-200 rounded-lg text-sm">
-                    <span className="font-mono text-slate-700 capitalize">{tag.replace(/_/g, ' ')}</span>
-                    <span className={`font-bold px-2.5 py-0.5 rounded ${pct >= 70 ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}`}>
-                      {pct}% ({data.correct}/{data.total})
-                    </span>
+
+          <div style={{ marginTop: '24px' }}>
+            <h3 style={{ color: '#1e293b' }}>Curriculum Roadmap:</h3>
+            {TOPICS.map((t, idx) => {
+              const isUnlocked = unlockedTopics.includes(idx);
+              const prog = topicProgress[idx];
+              return (
+                <div key={t.id} style={{ ...styles.roadmapItem, opacity: isUnlocked ? 1 : 0.6 }}>
+                  <div>
+                    <h4 style={{ margin: '0 0 4px 0', color: '#0f172a' }}>{t.title}</h4>
+                    <p style={{ margin: 0, fontSize: '0.85rem', color: '#64748b' }}>{t.description}</p>
                   </div>
-                );
-              })}
-            </div>
-            <button
-              onClick={reset}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-lg transition-all shadow text-sm"
-            >
-              Return to Topic Selection
-            </button>
-          </div>
-        ) : (
-          <div>
-            <div className="mb-3">
-              <span className="text-xs uppercase tracking-wider text-slate-400 font-bold">Question {currentIdx + 1}</span>
-              <p className="mt-1 text-sm text-slate-800 leading-relaxed font-normal">
-                {cleanText(currentQuestion.prompt)}
-              </p>
-            </div>
-
-            {/* Compact Visual Graph Box */}
-            <div className="my-3">
-              <h3 className="text-center text-xs font-bold uppercase tracking-wide text-slate-500 mb-1">
-                Q{currentIdx + 1} Visual Model: {currentQuestion.topic}
-              </h3>
-              <VisualAsset type={currentQuestion.visualType || 'velocity_triangle'} />
-            </div>
-
-            {/* Vertical Stacked Options Layout */}
-            <div className="mt-4 mb-4">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Choose Your Answer (Q{currentIdx + 1}):</h4>
-              <div className="flex flex-col gap-2 w-full">
-                {currentQuestion.options.map((opt, i) => {
-                  let optionStyle = "border-slate-200 bg-white text-slate-700 hover:bg-slate-50";
-                  if (isAnswerChecked) {
-                    if (i === currentQuestion.correctAnswer) {
-                      optionStyle = "border-emerald-500 bg-emerald-50/50 text-emerald-900 font-medium";
-                    } else if (i === selectedOption) {
-                      optionStyle = "border-rose-300 bg-rose-50/30 text-rose-900";
-                    }
-                  } else if (selectedOption === i) {
-                    optionStyle = "border-blue-500 bg-blue-50/30 text-blue-900";
-                  }
-
-                  return (
-                    <label
-                      key={i}
-                      className={`flex items-start gap-3 p-3 border rounded-lg cursor-pointer transition-all w-full ${optionStyle}`}
-                    >
-                      <input
-                        type="radio"
-                        name={`question-${currentIdx}`}
-                        disabled={isAnswerChecked}
-                        checked={selectedOption === i}
-                        onChange={() => setSelectedOption(i)}
-                        className="mt-0.5 text-blue-600 focus:ring-blue-500"
-                      />
-                      <span className="text-sm leading-normal">
-                        <strong className="font-semibold">{OPTION_LETTERS[i]})</strong> {cleanText(opt)}
-                      </span>
-                    </label>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Action Buttons */}
-            {!isAnswerChecked ? (
-              <button
-                disabled={selectedOption === null}
-                onClick={handleCheckAnswer}
-                className={`mt-2 px-5 py-2 rounded-lg font-medium text-sm transition-all shadow-sm ${
-                  selectedOption !== null
-                    ? 'bg-slate-900 hover:bg-slate-800 text-white cursor-pointer'
-                    : 'bg-slate-200 text-slate-400 cursor-not-allowed'
-                }`}
-              >
-                Check Answer (Q{currentIdx + 1})
-              </button>
-            ) : (
-              <div className="mt-3 space-y-3 animate-fadeIn">
-                {/* Expandable Solution Accordion */}
-                <div className="border border-slate-200 rounded-lg overflow-hidden">
-                  <button
-                    onClick={() => setShowExplanation(!showExplanation)}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 hover:bg-slate-100 flex justify-between items-center text-left text-xs font-medium text-slate-700 transition-colors"
+                  {isUnlocked ? (
+                    <button style={styles.primaryBtnSmall} onClick={() => startAssessment(idx)}>
+                      {prog?.passed ? 'Review / Retake' : 'Start Assessment'}
+                    </button>
                   >
-                    <span>{showExplanation ? '▾' : '▸'} View Solution & Explanation — Question {currentIdx + 1}</span>
-                    <span className="text-slate-400 font-mono">{showExplanation ? 'Hide' : 'Expand'}</span>
-                  </button>
-                  {showExplanation && (
-                    <div className="p-3.5 bg-white text-xs text-slate-600 border-t border-slate-200 leading-relaxed">
-                      <p className="font-semibold text-slate-800 mb-1">
-                        {selectedOption === currentQuestion.correctAnswer ? 'Correct!' : 'Incorrect.'}
-                      </p>
-                      {cleanText(currentQuestion.explanation)}
-                    </div>
+                  ) : (
+                    <span style={styles.lockedBadge}>🔒 Locked</span>
                   )}
                 </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
-                <button
-                  onClick={nextQuestion}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-lg transition-all shadow text-sm"
-                >
-                  {currentIdx < topicQuestions.length - 1 ? 'Next Question →' : 'View Assessment Report Card →'}
+      {/* 2. ASSESSMENT EXAM SCREEN */}
+      {view === 'assessment' && (
+        <div style={styles.card}>
+          <div style={styles.metaRow}>
+            <span style={styles.badge}>{currentTopic.title}</span>
+            <span style={{ marginLeft: 'auto', fontSize: '0.85rem', color: '#6b7280' }}>
+              Question {currentQIndex + 1} of {currentTopic.questions.length}
+            </span>
+          </div>
+
+          {currentTopic.questions[currentQIndex].visualType && (
+            <VisualAsset
+              type={currentTopic.questions[currentQIndex].visualType!}
+              data={currentTopic.questions[currentQIndex].visualData}
+            />
+          )}
+
+          <h3 style={styles.prompt}>{currentTopic.questions[currentQIndex].prompt}</h3>
+
+          <div style={styles.optionsList}>
+            {currentTopic.questions[currentQIndex].options.map((opt, idx) => {
+              let btnStyle = styles.optionBtn;
+              if (selectedOption === idx) btnStyle = { ...btnStyle, ...styles.optionSelected };
+              if (isSubmitted) {
+                if (idx === currentTopic.questions[currentQIndex].correct_idx) {
+                  btnStyle = { ...btnStyle, ...styles.optionCorrect };
+                } else if (selectedOption === idx) {
+                  btnStyle = { ...btnStyle, ...styles.optionIncorrect };
+                }
+              }
+
+              return (
+                <button key={idx} style={btnStyle} onClick={() => !isSubmitted && setselectedOption(idx)}>
+                  <span style={{ fontWeight: 600, marginRight: '10px' }}>{String.fromCharCode(65 + idx)}.</span>
+                  <span>{opt}</span>
                 </button>
-              </div>
+              );
+            })}
+          </div>
+
+          {isSubmitted && (
+            <div style={styles.explanationBox}>
+              <h4 style={{ margin: '0 0 6px 0', color: '#0369a1' }}>Explanation:</h4>
+              <p style={{ margin: 0, fontSize: '0.95rem', color: '#334155' }}>{currentTopic.questions[currentQIndex].explanation}</p>
+            </div>
+          )}
+
+          <div style={{ marginTop: '20px' }}>
+            {!isSubmitted ? (
+              <button
+                style={selectedOption !== null ? styles.primaryBtn : styles.disabledBtn}
+                onClick={handleAnswerSubmit}
+                disabled={selectedOption === null}
+              >
+                Submit Answer
+              </button>
+            ) : (
+              <button style={styles.primaryBtn} onClick={handleNextQuestion}>
+                {currentQIndex < currentTopic.questions.length - 1 ? 'Next Question →' : 'View Assessment Results'}
+              </button>
             )}
           </div>
-        )}
-      </div>
+        </div>
+      )}
+
+      {/* 3. DIFFERENTIATED TUTORIAL SCREEN (If score < 80%) */}
+      {view === 'tutorial' && (
+        <div style={styles.card}>
+          <div style={styles.bannerBoxWarning}>
+            <h2 style={{ margin: '0 0 8px 0', color: '#b45309' }}>Targeted Tutorial & Skill Builder</h2>
+            <p style={{ margin: 0, color: '#92400e', lineHeight: '1.5' }}>
+              Your diagnostic score was below the 4/5 mastery threshold ({topicProgress[activeTopicIndex]?.score}%). Review the core concepts below before retaking the assessment to unlock the next topic.
+            </p>
+          </div>
+
+          <div style={{ marginTop: '20px', lineHeight: '1.6', color: '#334155' }}>
+            <h3 style={{ color: '#1e293b' }}>Core Concept Review: {currentTopic.title}</h3>
+            <p>To achieve mastery, ensure you are comfortable with:</p>
+            <ul>
+              <li>Isolating unknown variables using algebraic manipulation.</li>
+              <li>Decomposing oblique vectors into orthogonal $x$ and $y$ components using sine and cosine.</li>
+              <li>Applying proportionality reasoning to analyze physical dependencies.</li>
+            </ul>
+          </div>
+
+          <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
+            <button style={styles.primaryBtn} onClick={() => startAssessment(activeTopicIndex)}>
+              Retake Assessment Exam 🔄
+            </button>
+            <button style={styles.secondaryBtn} onClick={() => setView('welcome')}>
+              Return to Roadmap
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* 4. DASHBOARD / ROADMAP VIEW (After Passing) */}
+      {view === 'dashboard' && (
+        <div style={styles.card}>
+          <div style={styles.bannerBoxSuccess}>
+            <h2 style={{ margin: '0 0 8px 0', color: '#15803d' }}>🎉 Assessment Passed! Mastery Achieved (4/5)</h2>
+            <p style={{ margin: 0, color: '#166534' }}>
+              You scored {topicProgress[activeTopicIndex]?.score}%. You have successfully mastered this unit and unlocked the next topic in the AP Physics 1 curriculum!
+            </p>
+          </div>
+
+          <div style={{ marginTop: '24px' }}>
+            <h3 style={{ color: '#1e293b' }}>Your Progress Roadmap:</h3>
+            {TOPICS.map((t, idx) => {
+              const isUnlocked = unlockedTopics.includes(idx);
+              const prog = topicProgress[idx];
+              return (
+                <div key={t.id} style={{ ...styles.roadmapItem, opacity: isUnlocked ? 1 : 0.6 }}>
+                  <div>
+                    <h4 style={{ margin: '0 0 4px 0', color: '#0f172a' }}>{t.title}</h4>
+                    <p style={{ margin: 0, fontSize: '0.85rem', color: '#64748b' }}>{t.description}</p>
+                  </div>
+                  {isUnlocked ? (
+                    <button style={styles.primaryBtnSmall} onClick={() => startAssessment(idx)}>
+                      {prog?.passed ? 'Passed ✅' : 'Start Assessment'}
+                    </button>
+                  ) : (
+                    <span style={styles.lockedBadge}>🔒 Locked</span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          <button style={{ ...styles.secondaryBtn, width: '100%', marginTop: '20px' }} onClick={() => setView('welcome')}>
+            Back to Home Overview
+          </button>
+        </div>
+      )}
     </div>
   );
 }
+
+const styles: Record<string, React.CSSProperties> = {
+  container: {
+    maxWidth: '850px',
+    margin: '0 auto',
+    padding: '24px 16px',
+    fontFamily: 'system-ui, -apple-system, sans-serif',
+    color: '#1f2937',
+  },
+  header: {
+    textAlign: 'center',
+    marginBottom: '24px',
+  },
+  title: {
+    fontSize: '2rem',
+    fontWeight: '800',
+    margin: 0,
+    color: '#111827',
+  },
+  subtitle: {
+    color: '#6b7280',
+    marginTop: '6px',
+  },
+  card: {
+    backgroundColor: '#ffffff',
+    border: '1px solid #e5e7eb',
+    borderRadius: '12px',
+    padding: '28px',
+    boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)',
+  },
+  bannerBox: {
+    backgroundColor: '#f0f9ff',
+    border: '1px solid #bae6fd',
+    borderRadius: '8px',
+    padding: '20px',
+  },
+  bannerBoxWarning: {
+    backgroundColor: '#fef3c7',
+    border: '1px solid #fde68a',
+    borderRadius: '8px',
+    padding: '20px',
+  },
+  bannerBoxSuccess: {
+    backgroundColor: '#f0fdf4',
+    border: '1px solid #bbf7d0',
+    borderRadius: '8px',
+    padding: '20px',
+  },
+  roadmapItem: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: '14px 16px',
+    border: '1px solid #e2e8f0',
+    borderRadius: '8px',
+    marginBottom: '10px',
+    backgroundColor: '#f8fafc',
+  },
+  lockedBadge: {
+    fontSize: '0.85rem',
+    fontWeight: '600',
+    color: '#94a3b8',
+  },
+  metaRow: {
+    display: 'flex',
+    gap: '8px',
+    alignItems: 'center',
+    marginBottom: '14px',
+  },
+  badge: {
+    backgroundColor: '#0284c7',
+    color: '#ffffff',
+    padding: '4px 10px',
+    borderRadius: '6px',
+    fontSize: '0.8rem',
+    fontWeight: '700',
+  },
+  prompt: {
+    fontSize: '1.15rem',
+    fontWeight: '600',
+    margin: '16px 0',
+    color: '#111827',
+  },
+  optionsList: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '10px',
+    margin: '20px 0',
+  },
+  optionBtn: {
+    display: 'flex',
+    alignItems: 'flex-start',
+    padding: '12px 16px',
+    borderRadius: '8px',
+    border: '1px solid #d1d5db',
+    backgroundColor: '#ffffff',
+    color: '#1f2937',
+    cursor: 'pointer',
+    textAlign: 'left',
+    fontSize: '0.95rem',
+  },
+  optionSelected: {
+    border: '2px solid #0284c7',
+    backgroundColor: '#f0f9ff',
+  },
+  optionCorrect: {
+    border: '2px solid #16a34a',
+    backgroundColor: '#f0fdf4',
+    color: '#15803d',
+  },
+  optionIncorrect: {
+    border: '2px solid #dc2626',
+    backgroundColor: '#fef2f2',
+    color: '#b91c1c',
+  },
+  primaryBtn: {
+    width: '100%',
+    padding: '12px 20px',
+    backgroundColor: '#0284c7',
+    color: '#ffffff',
+    border: 'none',
+    borderRadius: '8px',
+    fontWeight: '600',
+    fontSize: '1rem',
+    cursor: 'pointer',
+  },
+  primaryBtnSmall: {
+    padding: '8px 14px',
+    backgroundColor: '#0284c7',
+    color: '#ffffff',
+    border: 'none',
+    borderRadius: '6px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    whiteSpace: 'nowrap',
+  },
+  secondaryBtn: {
+    padding: '12px 20px',
+    backgroundColor: '#f1f5f9',
+    color: '#334155',
+    border: '1px solid #cbd5e1',
+    borderRadius: '8px',
+    fontWeight: '600',
+    fontSize: '1rem',
+    cursor: 'pointer',
+  },
+  disabledBtn: {
+    width: '100%',
+    padding: '12px 20px',
+    backgroundColor: '#e2e8f0',
+    color: '#94a3b8',
+    border: 'none',
+    borderRadius: '8px',
+    fontWeight: '600',
+    fontSize: '1rem',
+    cursor: 'not-allowed',
+  },
+  explanationBox: {
+    marginTop: '20px',
+    padding: '16px',
+    borderRadius: '8px',
+    backgroundColor: '#f8fafc',
+    borderLeft: '4px solid #0284c7',
+  },
+};
