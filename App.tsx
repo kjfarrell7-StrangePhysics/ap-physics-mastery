@@ -1,7 +1,30 @@
-import React, { useState, useMemo, useEffect } from 'react';
-import { VisualAsset } from './VisualAsset';
-import type { VisualType, VisualData } from './VisualAsset';
+import React, { useState } from 'react';
 
+// --- Visual Component ---
+type VisualType = 'free_body_diagram' | 'kinematics_graph';
+interface VisualData {
+  inclineAngle?: number;
+  graphType?: string;
+}
+
+const VisualAsset: React.FC<{ type: VisualType; data?: VisualData }> = ({ type, data }) => {
+  return (
+    <div style={{
+      padding: '16px',
+      backgroundColor: '#f1f5f9',
+      border: '1px dashed #cbd5e1',
+      borderRadius: '8px',
+      margin: '12px 0',
+      textAlign: 'center',
+      color: '#475569',
+      fontSize: '0.9rem'
+    }}>
+      📊 [Interactive Physics Visual: {type} {data ? JSON.stringify(data) : ''}]
+    </div>
+  );
+};
+
+// --- Data Types ---
 interface Question {
   id: string;
   topicId: string;
@@ -29,35 +52,35 @@ const TOPICS: Topic[] = [
       {
         id: 't1_q1',
         topicId: 'topic_1',
-        prompt: 'Solve algebraically for the acceleration $a$ in the kinematic equation: $d = v_0 t + \\frac{1}{2} a t^2$',
+        prompt: 'Solve algebraically for the acceleration a in the kinematic equation: d = v_0 t + (1/2) a t^2',
         options: [
-          '$a = \\frac{d - v_0 t}{2t^2}$',
-          '$a = \\frac{2(d - v_0 t)}{t^2}$',
-          '$a = \\frac{d}{t^2} - v_0$',
-          '$a = \\frac{2d}{t} - 2v_0$'
+          'a = (d - v_0 t) / (2t^2)',
+          'a = 2(d - v_0 t) / t^2',
+          'a = (d / t^2) - v_0',
+          'a = (2d / t) - 2v_0'
         ],
         correct_idx: 1,
-        explanation: 'Subtract $v_0 t$ from both sides ($d - v_0 t = \\frac{1}{2}at^2$), then multiply by 2 and divide by $t^2$ to isolate $a$.'
+        explanation: 'Subtract v_0 t from both sides, then multiply by 2 and divide by t^2 to isolate a.'
       },
       {
         id: 't1_q2',
         topicId: 'topic_1',
-        prompt: 'A vector $\\vec{F}$ has a magnitude of $50\\text{ N}$ and acts at an angle of $30^\\circ$ above the horizontal. What is the magnitude of the horizontal component $F_x$?',
+        prompt: 'A vector F has a magnitude of 50 N and acts at an angle of 30 degrees above the horizontal. What is the magnitude of the horizontal component F_x?',
         options: [
-          '$50 \\sin(30^\\circ) \\approx 25\\text{ N}$',
-          '$50 \\cos(30^\\circ) \\approx 43.3\\text{ N}$',
-          '$50 \\tan(30^\\circ) \\approx 28.9\\text{ N}$',
-          '$50 / \\cos(30^\\circ) \\approx 57.7\\text{ N}$'
+          '50 sin(30°) ≈ 25 N',
+          '50 cos(30°) ≈ 43.3 N',
+          '50 tan(30°) ≈ 28.9 N',
+          '50 / cos(30°) ≈ 57.7 N'
         ],
         correct_idx: 1,
-        explanation: 'The horizontal component of a vector is given by $F_x = F \\cos(\\theta)$. Therefore, $50 \\cos(30^\\circ) = 50 \\times \\frac{\\sqrt{3}}{2} \\approx 43.3\\text{ N}$.',
+        explanation: 'The horizontal component is given by F_x = F cos(θ). Therefore, 50 cos(30°) ≈ 43.3 N.',
         visualType: 'free_body_diagram',
         visualData: { inclineAngle: 30 }
       },
       {
         id: 't1_q3',
         topicId: 'topic_1',
-        prompt: 'If the net force acting on an object of constant mass is doubled, how does the resulting acceleration change according to Newton\'s Second Law ($F_{net} = ma$)?',
+        prompt: 'If the net force acting on an object of constant mass is doubled, how does the resulting acceleration change according to Newton\'s Second Law (F_net = ma)?',
         options: [
           'Acceleration is halved',
           'Acceleration remains unchanged',
@@ -65,20 +88,20 @@ const TOPICS: Topic[] = [
           'Acceleration is doubled'
         ],
         correct_idx: 3,
-        explanation: 'Since mass is constant, force and acceleration are directly proportional ($a = F_{net} / m$). Doubling the net force doubles the acceleration.'
+        explanation: 'Since mass is constant, force and acceleration are directly proportional. Doubling net force doubles acceleration.'
       },
       {
         id: 't1_q4',
         topicId: 'topic_1',
-        prompt: 'Convert a speed of $72\\text{ km/h}$ into standard SI base units ($\text{m/s}$).',
+        prompt: 'Convert a speed of 72 km/h into standard SI base units (m/s).',
         options: [
-          '$20\\text{ m/s}$',
-          '$25\\text{ m/s}$',
-          '$120\\text{ m/s}$',
-          '$7.2\\text{ m/s}$'
+          '20 m/s',
+          '25 m/s',
+          '120 m/s',
+          '7.2 m/s'
         ],
         correct_idx: 0,
-        explanation: 'Multiply by $1000\\text{ m/km}$ and divide by $3600\\text{ s/h}$ (or simply divide by 3.6): $72 / 3.6 = 20\\text{ m/s}$.'
+        explanation: 'Divide by 3.6 to convert km/h to m/s: 72 / 3.6 = 20 m/s.'
       }
     ]
   },
@@ -98,7 +121,7 @@ const TOPICS: Topic[] = [
           'Jerk'
         ],
         correct_idx: 2,
-        explanation: 'The derivative of velocity with respect to time ($dv/dt$) represents acceleration.',
+        explanation: 'The derivative of velocity with respect to time represents acceleration.',
         visualType: 'kinematics_graph',
         visualData: { graphType: 'vt' }
       }
@@ -106,17 +129,16 @@ const TOPICS: Topic[] = [
   }
 ];
 
-const PASSING_MASTERY_SCORE = 80; // 80% or higher (representing a 4 out of 5 mastery level)
+const PASSING_MASTERY_SCORE = 80;
 
 export default function App() {
   const [view, setView] = useState<'welcome' | 'assessment' | 'tutorial' | 'dashboard'>('welcome');
   const [activeTopicIndex, setActiveTopicIndex] = useState(0);
-  const [unlockedTopics, setUnlockedTopics] = useState<number[]>([0]); // Topic 1 unlocked initially
+  const [unlockedTopics, setUnlockedTopics] = useState<number[]>([0]);
   const [topicProgress, setTopicProgress] = useState<Record<number, { score: number; passed: boolean }>>({});
 
-  // Assessment state
   const [currentQIndex, setCurrentQIndex] = useState(0);
-  const [selectedOption, setselectedOption] = useState<number | null>(null);
+  const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [scoreCount, setScoreCount] = useState(0);
 
@@ -125,7 +147,7 @@ export default function App() {
   const startAssessment = (topicIdx: number) => {
     setActiveTopicIndex(topicIdx);
     setCurrentQIndex(0);
-    setselectedOption(null);
+    setSelectedOption(null);
     setIsSubmitted(false);
     setScoreCount(0);
     setView('assessment');
@@ -141,10 +163,9 @@ export default function App() {
   const handleNextQuestion = () => {
     if (currentQIndex < currentTopic.questions.length - 1) {
       setCurrentQIndex(prev => prev + 1);
-      setselectedOption(null);
+      setSelectedOption(null);
       setIsSubmitted(false);
     } else {
-      // Assessment finished, calculate score percentage
       const finalCorrect = scoreCount + (selectedOption === currentTopic.questions[currentQIndex].correct_idx ? 1 : 0);
       const scorePct = Math.round((finalCorrect / currentTopic.questions.length) * 100);
       const passed = scorePct >= PASSING_MASTERY_SCORE;
@@ -200,7 +221,6 @@ export default function App() {
                     <button style={styles.primaryBtnSmall} onClick={() => startAssessment(idx)}>
                       {prog?.passed ? 'Review / Retake' : 'Start Assessment'}
                     </button>
-                  >
                   ) : (
                     <span style={styles.lockedBadge}>🔒 Locked</span>
                   )}
@@ -243,7 +263,7 @@ export default function App() {
               }
 
               return (
-                <button key={idx} style={btnStyle} onClick={() => !isSubmitted && setselectedOption(idx)}>
+                <button key={idx} style={btnStyle} onClick={() => !isSubmitted && setSelectedOption(idx)}>
                   <span style={{ fontWeight: 600, marginRight: '10px' }}>{String.fromCharCode(65 + idx)}.</span>
                   <span>{opt}</span>
                 </button>
@@ -276,7 +296,7 @@ export default function App() {
         </div>
       )}
 
-      {/* 3. DIFFERENTIATED TUTORIAL SCREEN (If score < 80%) */}
+      {/* 3. DIFFERENTIATED TUTORIAL SCREEN */}
       {view === 'tutorial' && (
         <div style={styles.card}>
           <div style={styles.bannerBoxWarning}>
@@ -291,8 +311,8 @@ export default function App() {
             <p>To achieve mastery, ensure you are comfortable with:</p>
             <ul>
               <li>Isolating unknown variables using algebraic manipulation.</li>
-              <li>Decomposing oblique vectors into orthogonal $x$ and $y$ components using sine and cosine.</li>
-              <li>Applying proportionality reasoning to analyze physical dependencies.</li>
+              <li>Decomposing oblique vectors into orthogonal x and y components.</li>
+              <li>Applying proportional reasoning to analyze physical dependencies.</li>
             </ul>
           </div>
 
@@ -307,7 +327,7 @@ export default function App() {
         </div>
       )}
 
-      {/* 4. DASHBOARD / ROADMAP VIEW (After Passing) */}
+      {/* 4. DASHBOARD / ROADMAP VIEW */}
       {view === 'dashboard' && (
         <div style={styles.card}>
           <div style={styles.bannerBoxSuccess}>
