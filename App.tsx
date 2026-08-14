@@ -52,20 +52,20 @@ const TOPICS: Topic[] = [
       {
         id: 't1_q1',
         topicId: 'topic_1',
-        prompt: 'Solve algebraically for the acceleration a in the kinematic equation: d = v_0 t + (1/2) a t^2',
+        prompt: 'Solve algebraically for the acceleration (a) in the kinematic equation: d = v₀t + ½at²',
         options: [
-          'a = (d - v_0 t) / (2t^2)',
-          'a = 2(d - v_0 t) / t^2',
-          'a = (d / t^2) - v_0',
-          'a = (2d / t) - 2v_0'
+          'a = (d - v₀t) / 2t²',
+          'a = 2(d - v₀t) / t²',
+          'a = (d / t²) - v₀',
+          'a = (2d / t) - 2v₀'
         ],
         correct_idx: 1,
-        explanation: 'Subtract v_0 t from both sides, then multiply by 2 and divide by t^2 to isolate a.'
+        explanation: 'Subtract v₀t from both sides, then multiply by 2 and divide by t² to isolate a.'
       },
       {
         id: 't1_q2',
         topicId: 'topic_1',
-        prompt: 'A vector F has a magnitude of 50 N and acts at an angle of 30 degrees above the horizontal. What is the magnitude of the horizontal component F_x?',
+        prompt: 'A vector F has a magnitude of 50 N and acts at an angle of 30° above the horizontal. What is the magnitude of the horizontal component Fₓ?',
         options: [
           '50 sin(30°) ≈ 25 N',
           '50 cos(30°) ≈ 43.3 N',
@@ -73,14 +73,14 @@ const TOPICS: Topic[] = [
           '50 / cos(30°) ≈ 57.7 N'
         ],
         correct_idx: 1,
-        explanation: 'The horizontal component is given by F_x = F cos(θ). Therefore, 50 cos(30°) ≈ 43.3 N.',
+        explanation: 'The horizontal component is given by Fₓ = F cos(θ). Therefore, 50 cos(30°) ≈ 43.3 N.',
         visualType: 'free_body_diagram',
         visualData: { inclineAngle: 30 }
       },
       {
         id: 't1_q3',
         topicId: 'topic_1',
-        prompt: 'If the net force acting on an object of constant mass is doubled, how does the resulting acceleration change according to Newton\'s Second Law (F_net = ma)?',
+        prompt: 'If the net force acting on an object of constant mass is doubled, how does the resulting acceleration change according to Newton\'s Second Law (Fₙₑₜ = ma)?',
         options: [
           'Acceleration is halved',
           'Acceleration remains unchanged',
@@ -124,6 +124,66 @@ const TOPICS: Topic[] = [
         explanation: 'The derivative of velocity with respect to time represents acceleration.',
         visualType: 'kinematics_graph',
         visualData: { graphType: 'vt' }
+      },
+      {
+        id: 't2_q2',
+        topicId: 'topic_2',
+        prompt: 'An object is dropped from rest off a cliff and falls freely under gravity. What is its displacement after 3.0 s? (Neglect air resistance, use g = 9.8 m/s²)',
+        options: [
+          '29.4 meters',
+          '44.1 meters',
+          '88.2 meters',
+          '14.7 meters'
+        ],
+        correct_idx: 1,
+        explanation: 'Using d = v₀t + ½gt² where v₀ = 0: d = 0.5 * 9.8 * (3.0)² = 4.9 * 9 = 44.1 meters.'
+      },
+      {
+        id: 't2_q3',
+        topicId: 'topic_2',
+        prompt: 'A projectile is launched horizontally from the top of a tower with an initial velocity of 15 m/s. How does its horizontal velocity change just before hitting the ground (ignoring air resistance)?',
+        options: [
+          'It increases linearly with time',
+          'It decreases to zero',
+          'It remains constant at 15 m/s',
+          'It depends entirely on the height of the tower'
+        ],
+        correct_idx: 2,
+        explanation: 'In ideal projectile motion, there is no horizontal acceleration (aₓ = 0), so the horizontal component of velocity remains constant throughout flight.'
+      }
+    ]
+  },
+  {
+    id: 'topic_3',
+    title: 'Topic 3: Newton\'s Laws of Motion (Dynamics)',
+    description: 'Investigating forces, free-body diagrams, friction, tension, and Newton\'s laws in connected systems.',
+    questions: [
+      {
+        id: 't3_q1',
+        topicId: 'topic_3',
+        prompt: 'A 10 kg block is pulled across a frictionless horizontal surface with a horizontal force of 30 N. What is the magnitude of the block\'s acceleration?',
+        options: [
+          '0.33 m/s²',
+          '3.0 m/s²',
+          '300 m/s²',
+          '9.8 m/s²'
+        ],
+        correct_idx: 1,
+        explanation: 'Using Newton\'s Second Law: a = Fₙₑₜ / m = 30 N / 10 kg = 3.0 m/s².',
+        visualType: 'free_body_diagram'
+      },
+      {
+        id: 't3_q2',
+        topicId: 'topic_3',
+        prompt: 'Which of Newton\'s laws best explains why passengers lurch forward when a moving bus abruptly brakes?',
+        options: [
+          'Newton\'s First Law (Inertia)',
+          'Newton\'s Second Law (F = ma)',
+          'Newton\'s Third Law (Action-Reaction)',
+          'Universal Law of Gravitation'
+        ],
+        correct_idx: 0,
+        explanation: 'Newton\'s First Law states that an object in motion tends to stay in motion unless acted upon by an external net force.'
       }
     ]
   }
@@ -302,18 +362,13 @@ export default function App() {
           <div style={styles.bannerBoxWarning}>
             <h2 style={{ margin: '0 0 8px 0', color: '#b45309' }}>Targeted Tutorial & Skill Builder</h2>
             <p style={{ margin: 0, color: '#92400e', lineHeight: '1.5' }}>
-              Your diagnostic score was below the 4/5 mastery threshold ({topicProgress[activeTopicIndex]?.score}%). Review the core concepts below before retaking the assessment to unlock the next topic.
+              Your diagnostic score was below the 4/5 mastery threshold ({topicProgress[activeTopicIndex]?.score}%). Review the core concepts below before retaking the assessment.
             </p>
           </div>
 
           <div style={{ marginTop: '20px', lineHeight: '1.6', color: '#334155' }}>
             <h3 style={{ color: '#1e293b' }}>Core Concept Review: {currentTopic.title}</h3>
-            <p>To achieve mastery, ensure you are comfortable with:</p>
-            <ul>
-              <li>Isolating unknown variables using algebraic manipulation.</li>
-              <li>Decomposing oblique vectors into orthogonal x and y components.</li>
-              <li>Applying proportional reasoning to analyze physical dependencies.</li>
-            </ul>
+            <p>To achieve mastery, ensure you are comfortable with fundamental formulas, conceptual definitions, and analytical problem-solving strategies.</p>
           </div>
 
           <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
