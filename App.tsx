@@ -41,24 +41,20 @@ interface Topic {
   title: string;
   description: string;
   questions: Question[];
+  variantQuestions: Question[];
 }
 
 const TOPICS: Topic[] = [
   {
     id: 'topic_1',
     title: 'Topic 1: Mathematical & Analytical Tools for AP Physics 1',
-    description: 'Mastery of algebraic rearrangement, vector decomposition, unit analysis, and proportional reasoning required for success across all AP Physics 1 units.',
+    description: 'Mastery of algebraic rearrangement, vector decomposition, unit analysis, and proportional reasoning.',
     questions: [
       {
         id: 't1_q1',
         topicId: 'topic_1',
         prompt: 'Solve algebraically for the acceleration (a) in the kinematic equation: d = v₀t + ½at²',
-        options: [
-          'a = (d - v₀t) / 2t²',
-          'a = 2(d - v₀t) / t²',
-          'a = (d / t²) - v₀',
-          'a = (2d / t) - 2v₀'
-        ],
+        options: ['a = (d - v₀t) / 2t²', 'a = 2(d - v₀t) / t²', 'a = (d / t²) - v₀', 'a = (2d / t) - 2v₀'],
         correct_idx: 1,
         explanation: 'Subtract v₀t from both sides, then multiply by 2 and divide by t² to isolate a.'
       },
@@ -66,27 +62,15 @@ const TOPICS: Topic[] = [
         id: 't1_q2',
         topicId: 'topic_1',
         prompt: 'A vector F has a magnitude of 50 N and acts at an angle of 30° above the horizontal. What is the magnitude of the horizontal component Fₓ?',
-        options: [
-          '50 sin(30°) ≈ 25 N',
-          '50 cos(30°) ≈ 43.3 N',
-          '50 tan(30°) ≈ 28.9 N',
-          '50 / cos(30°) ≈ 57.7 N'
-        ],
+        options: ['50 sin(30°) ≈ 25 N', '50 cos(30°) ≈ 43.3 N', '50 tan(30°) ≈ 28.9 N', '50 / cos(30°) ≈ 57.7 N'],
         correct_idx: 1,
-        explanation: 'The horizontal component is given by Fₓ = F cos(θ). Therefore, 50 cos(30°) ≈ 43.3 N.',
-        visualType: 'free_body_diagram',
-        visualData: { inclineAngle: 30 }
+        explanation: 'The horizontal component is given by Fₓ = F cos(θ). Therefore, 50 cos(30°) ≈ 43.3 N.'
       },
       {
         id: 't1_q3',
         topicId: 'topic_1',
         prompt: 'If the net force acting on an object of constant mass is doubled, how does the resulting acceleration change according to Newton\'s Second Law (Fₙₑₜ = ma)?',
-        options: [
-          'Acceleration is halved',
-          'Acceleration remains unchanged',
-          'Acceleration is quadrupled',
-          'Acceleration is doubled'
-        ],
+        options: ['Acceleration is halved', 'Acceleration remains unchanged', 'Acceleration is quadrupled', 'Acceleration is doubled'],
         correct_idx: 3,
         explanation: 'Since mass is constant, force and acceleration are directly proportional. Doubling net force doubles acceleration.'
       },
@@ -94,73 +78,116 @@ const TOPICS: Topic[] = [
         id: 't1_q4',
         topicId: 'topic_1',
         prompt: 'Convert a speed of 72 km/h into standard SI base units (m/s).',
-        options: [
-          '20 m/s',
-          '25 m/s',
-          '120 m/s',
-          '7.2 m/s'
-        ],
+        options: ['20 m/s', '25 m/s', '120 m/s', '7.2 m/s'],
         correct_idx: 0,
         explanation: 'Divide by 3.6 to convert km/h to m/s: 72 / 3.6 = 20 m/s.'
+      }
+    ],
+    variantQuestions: [
+      {
+        id: 't1_q1_v',
+        topicId: 'topic_1',
+        prompt: 'Solve algebraically for the initial velocity (v₀) in the kinematic equation: d = v₀t + ½at²',
+        options: ['v₀ = (d - ½at²) / t', 'v₀ = (d + ½at²) / t', 'v₀ = dt - ½at', 'v₀ = d / (t + ½at²)'],
+        correct_idx: 0,
+        explanation: 'Subtract ½at² from both sides, then divide by t to isolate v₀.'
+      },
+      {
+        id: 't1_q2_v',
+        topicId: 'topic_1',
+        prompt: 'A vector T has a magnitude of 100 N and acts at an angle of 60° above the horizontal. What is the magnitude of its vertical component Tᵧ?',
+        options: ['100 cos(60°) = 50 N', '100 sin(60°) ≈ 86.6 N', '100 tan(60°) ≈ 173.2 N', '100 / sin(60°) ≈ 115.4 N'],
+        correct_idx: 1,
+        explanation: 'The vertical component uses the sine function: Tᵧ = T sin(60°) ≈ 86.6 N.'
+      },
+      {
+        id: 't1_q3_v',
+        topicId: 'topic_1',
+        prompt: 'If the mass of an object is tripled while the net force acting on it remains constant, how does its acceleration change?',
+        options: ['Acceleration is tripled', 'Acceleration is unchanged', 'Acceleration is cut to one-third (⅓)', 'Acceleration is multiplied by nine'],
+        correct_idx: 2,
+        explanation: 'Acceleration is inversely proportional to mass (a = F / m). Tripling the mass reduces acceleration by a factor of 3.'
+      },
+      {
+        id: 't1_q4_v',
+        topicId: 'topic_1',
+        prompt: 'Convert an acceleration of 18 km/h·s into standard SI base units (m/s²).',
+        options: ['5 m/s²', '0.5 m/s²', '64.8 m/s²', '180 m/s²'],
+        correct_idx: 0,
+        explanation: 'Convert km/h to m/s by dividing by 3.6: 18 / 3.6 = 5 m/s².'
       }
     ]
   },
   {
     id: 'topic_2_measurement',
     title: 'Topic 2: Measurement, Uncertainty, and Data Linearization',
-    description: 'Mastering measurement precision, uncertainty propagation, data linearization, and extracting physical constants from lines of best fit.',
+    description: 'Mastering measurement precision, uncertainty propagation, data linearization, and best-fit line analysis.',
     questions: [
       {
         id: 'meas_q1',
         topicId: 'topic_2_measurement',
-        prompt: 'When using a metric ruler with millimeter (mm) markings to measure the length of an object, to what decimal place should a student record the measurement?',
-        options: [
-          'To the nearest millimeter (e.g., 45 mm)',
-          'To the nearest tenth of a millimeter (e.g., 45.0 mm) by estimating one uncertain digit',
-          'To the nearest centimeter (e.g., 5 cm)',
-          'To the nearest half-millimeter only'
-        ],
+        prompt: 'When using a metric ruler with millimeter markings, to what decimal place should a measurement be recorded?',
+        options: ['To the nearest millimeter', 'To the tenth of a millimeter by estimating one uncertain digit', 'To the nearest centimeter', 'To the nearest half-millimeter only'],
         correct_idx: 1,
-        explanation: 'Scientific measurement convention requires recording all certain digits known from the instrument scale plus one estimated uncertain digit.'
+        explanation: 'Scientific convention requires recording all certain scale digits plus one estimated uncertain digit.'
       },
       {
         id: 'meas_q2',
         topicId: 'topic_2_measurement',
-        prompt: 'The period (T) of a simple pendulum of length (L) is given by T = 2π√(L/g). To linearize experimental data of T versus L, what graph should a student plot?',
-        options: [
-          'T versus L²',
-          'T² versus L',
-          'T versus √L',
-          '1/T versus L'
-        ],
+        prompt: 'The period (T) of a pendulum is T = 2π√(L/g). To linearize experimental data of T versus L, what graph should be plotted?',
+        options: ['T vs L²', 'T² vs L', 'T vs √L', '1/T vs L'],
         correct_idx: 1,
-        explanation: 'Squaring both sides yields T² = (4π²/g)L. Plotting T² on the vertical axis and L on the horizontal axis creates a linear relationship y = mx.'
+        explanation: 'Squaring both sides gives T² = (4π²/g)L, creating a linear relationship T² vs L (y = mx).'
       },
       {
         id: 'meas_q3',
         topicId: 'topic_2_measurement',
-        prompt: 'An experimental data set of position vs. time for an accelerating cart yields a best-fit line equation of y = (3.5 m/s²)x + 0.1 m. If the theoretical equation is x = ½at², what does the slope (3.5 m/s²) represent?',
-        options: [
-          'The acceleration (a)',
-          'Half of the acceleration (½a)',
-          'Twice the acceleration (2a)',
-          'The initial velocity (v₀)'
-        ],
+        prompt: 'A best-fit line for position vs. time squared yields y = (3.5 m/s²)x + 0.1 m. If the theoretical equation is x = ½at², what does the slope represent?',
+        options: ['The acceleration (a)', 'Half of the acceleration (½a)', 'Twice the acceleration (2a)', 'Initial velocity (v₀)'],
         correct_idx: 2,
-        explanation: 'Comparing y = mx + b to x = ½at² where x is plotted against t², the slope corresponds to ½a, making a equal to twice the slope (7.0 m/s²).'
+        explanation: 'Comparing y = mx + b to x = ½at², the slope represents ½a, meaning a is twice the slope (7.0 m/s²).'
       },
       {
         id: 'meas_q4',
         topicId: 'topic_2_measurement',
-        prompt: 'A student measures the mass of an object as 50.0 g ± 0.5 g and its volume as 10.0 cm³ ± 0.2 cm³. When calculating density (ρ = m/V), what happens to the relative uncertainties?',
-        options: [
-          'They are subtracted',
-          'They are multiplied together',
-          'They are added together',
-          'They are averaged'
-        ],
+        prompt: 'Mass is measured as 50.0 g ± 0.5 g and volume as 10.0 cm³ ± 0.2 cm³. When calculating density (ρ = m/V), what happens to relative uncertainties?',
+        options: ['They are subtracted', 'They are multiplied', 'They are added together', 'They are averaged'],
         correct_idx: 2,
-        explanation: 'When multiplying or dividing quantities with uncertainties, their fractional or percentage uncertainties are added together.'
+        explanation: 'When multiplying or dividing experimental values with uncertainties, their percentage/relative uncertainties add together.'
+      }
+    ],
+    variantQuestions: [
+      {
+        id: 'meas_q1_v',
+        topicId: 'topic_2_measurement',
+        prompt: 'A digital stopwatch measures time to the hundredths place (e.g., 12.45 s). What does this imply about the measurement?',
+        options: ['It has zero uncertainty', 'The final digit (5) is an estimated uncertain digit', 'The instrument only reads to the tenths place', 'The true time is guaranteed to be exact'],
+        correct_idx: 1,
+        explanation: 'The last digit displayed on a measuring instrument represents the technician\'s or instrument\'s estimated uncertain digit.'
+      },
+      {
+        id: 'meas_q2_v',
+        topicId: 'topic_2_measurement',
+        prompt: 'For an object moving at constant acceleration from rest, x = ½at² is evaluated. To linearize position (x) as a function of time (t), what should be plotted?',
+        options: ['x vs t', 'x vs t²', '√x vs t', '1/x vs t'],
+        correct_idx: 1,
+        explanation: 'Plotting position (x) on the vertical axis and time squared (t²) on the horizontal axis produces a straight line with slope ½a.'
+      },
+      {
+        id: 'meas_q3_v',
+        topicId: 'topic_2_measurement',
+        prompt: 'In an experiment graphing force (F) versus stretch distance (x) for a spring, the slope of the best-fit line is 25 N/m. What physical parameter does this slope represent?',
+        options: ['Spring constant (k)', 'Potential energy (U)', 'Mass attached (m)', 'Work done (W)'],
+        correct_idx: 0,
+        explanation: 'Hooke\'s Law is F = kx. Plotting F on the vertical axis and x on the horizontal axis yields a slope equal to the spring constant k.'
+      },
+      {
+        id: 'meas_q4_v',
+        topicId: 'topic_2_measurement',
+        prompt: 'Radius is measured with a 3% relative uncertainty. When calculating the area of a circle (A = πr²), what is the approximate relative uncertainty in the calculated area?',
+        options: ['3%', '6%', '9%', '1.5%'],
+        correct_idx: 1,
+        explanation: 'Since A = πr * r, the relative uncertainties of multiplied terms add: 3% + 3% = 6% (or using exponents, 2 * 3% = 6%).'
       }
     ]
   },
@@ -173,42 +200,51 @@ const TOPICS: Topic[] = [
         id: 't3_q1',
         topicId: 'topic_3',
         prompt: 'What physical quantity is represented by the slope of a velocity-time graph?',
-        options: [
-          'Position',
-          'Displacement',
-          'Acceleration',
-          'Jerk'
-        ],
+        options: ['Position', 'Displacement', 'Acceleration', 'Jerk'],
         correct_idx: 2,
-        explanation: 'The derivative of velocity with respect to time represents acceleration.',
-        visualType: 'kinematics_graph',
-        visualData: { graphType: 'vt' }
+        explanation: 'The derivative of velocity with respect to time represents acceleration.'
       },
       {
         id: 't3_q2',
         topicId: 'topic_3',
-        prompt: 'An object is dropped from rest off a cliff and falls freely under gravity. What is its displacement after 3.0 s? (Neglect air resistance, use g = 9.8 m/s²)',
-        options: [
-          '29.4 meters',
-          '44.1 meters',
-          '88.2 meters',
-          '14.7 meters'
-        ],
+        prompt: 'An object is dropped from rest off a cliff and falls freely. What is its displacement after 3.0 s? (g = 9.8 m/s²)',
+        options: ['29.4 m', '44.1 m', '88.2 m', '14.7 m'],
         correct_idx: 1,
-        explanation: 'Using d = v₀t + ½gt² where v₀ = 0: d = 0.5 * 9.8 * (3.0)² = 44.1 meters.'
+        explanation: 'Using d = ½gt² = 0.5 * 9.8 * (3.0)² = 44.1 meters.'
       },
       {
         id: 't3_q3',
         topicId: 'topic_3',
-        prompt: 'A projectile is launched horizontally from the top of a tower with an initial velocity of 15 m/s. How does its horizontal velocity change just before hitting the ground?',
-        options: [
-          'It increases linearly with time',
-          'It decreases to zero',
-          'It remains constant at 15 m/s',
-          'It depends entirely on the height of the tower'
-        ],
+        prompt: 'A projectile is launched horizontally at 15 m/s from a tower. How does its horizontal velocity change just before impact?',
+        options: ['Increases linearly', 'Decreases to zero', 'Remains constant at 15 m/s', 'Depends on tower height'],
         correct_idx: 2,
-        explanation: 'In ideal projectile motion, there is no horizontal acceleration (aₓ = 0), so horizontal velocity remains constant.'
+        explanation: 'With no horizontal forces or acceleration (aₓ = 0), horizontal velocity remains constant.'
+      }
+    ],
+    variantQuestions: [
+      {
+        id: 't3_q1_v',
+        topicId: 'topic_3',
+        prompt: 'What physical quantity is represented by the area under a velocity-time graph between two time points?',
+        options: ['Acceleration', 'Displacement', 'Instantaneous speed', 'Change in acceleration'],
+        correct_idx: 1,
+        explanation: 'Integrating velocity over time (the area under a v-t graph) yields displacement.'
+      },
+      {
+        id: 't3_q2_v',
+        topicId: 'topic_3',
+        prompt: 'A ball is thrown straight upward with an initial velocity of 20 m/s. What is its instantaneous acceleration at the very top of its trajectory? (g = 9.8 m/s²)',
+        options: ['0 m/s²', '9.8 m/s² downward', '9.8 m/s² upward', '20 m/s²'],
+        correct_idx: 1,
+        explanation: 'Even though velocity is momentarily zero at the peak, gravity continues to act on the object constantly at 9.8 m/s² downward.'
+      },
+      {
+        id: 't3_q3_v',
+        topicId: 'topic_3',
+        prompt: 'Two identical balls are released simultaneously: Ball A is dropped straight down, while Ball B is shot horizontally off the same ledge. Which ball hits the ground first (ignoring air resistance)?',
+        options: ['Ball A', 'Ball B', 'They hit at the exact same time', 'Depends on launch speed'],
+        correct_idx: 2,
+        explanation: 'Vertical and horizontal motions are independent. Both fall the same vertical height under the same vertical gravity acceleration, so they land simultaneously.'
       }
     ]
   },
@@ -220,29 +256,36 @@ const TOPICS: Topic[] = [
       {
         id: 't4_q1',
         topicId: 'topic_4',
-        prompt: 'A 10 kg block is pulled across a frictionless horizontal surface with a horizontal force of 30 N. What is the magnitude of the block\'s acceleration?',
-        options: [
-          '0.33 m/s²',
-          '3.0 m/s²',
-          '300 m/s²',
-          '9.8 m/s²'
-        ],
+        prompt: 'A 10 kg block is pulled across a frictionless horizontal surface with a horizontal force of 30 N. What is the magnitude of acceleration?',
+        options: ['0.33 m/s²', '3.0 m/s²', '300 m/s²', '9.8 m/s²'],
         correct_idx: 1,
-        explanation: 'Using Newton\'s Second Law: a = Fₙₑₜ / m = 30 N / 10 kg = 3.0 m/s².',
-        visualType: 'free_body_diagram'
+        explanation: 'Using Newton\'s Second Law: a = F / m = 30 N / 10 kg = 3.0 m/s².'
       },
       {
         id: 't4_q2',
         topicId: 'topic_4',
-        prompt: 'Which of Newton\'s laws best explains why passengers lurch forward when a moving bus abruptly brakes?',
-        options: [
-          'Newton\'s First Law (Inertia)',
-          'Newton\'s Second Law (F = ma)',
-          'Newton\'s Third Law (Action-Reaction)',
-          'Universal Law of Gravitation'
-        ],
+        prompt: 'Which law explains why passengers lurch forward when a moving bus abruptly brakes?',
+        options: ['Newton\'s First Law', 'Newton\'s Second Law', 'Newton\'s Third Law', 'Law of Gravitation'],
         correct_idx: 0,
-        explanation: 'Newton\'s First Law states that an object in motion tends to stay in motion unless acted upon by an external net force.'
+        explanation: 'Newton\'s First Law (Inertia) states objects in motion tend to stay in motion unless acted on by an external net force.'
+      }
+    ],
+    variantQuestions: [
+      {
+        id: 't4_q1_v',
+        topicId: 'topic_4',
+        prompt: 'A 5 kg box experiences a net force of 20 N. What is its acceleration?',
+        options: ['100 m/s²', '4.0 m/s²', '0.25 m/s²', '9.8 m/s²'],
+        correct_idx: 1,
+        explanation: 'Using a = F / m = 20 N / 5 kg = 4.0 m/s².'
+      },
+      {
+        id: 't4_q2_v',
+        topicId: 'topic_4',
+        prompt: 'When a hammer exerts a force on a nail, what does Newton\'s Third Law say about the force the nail exerts on the hammer?',
+        options: ['The nail exerts zero force', 'The nail exerts a smaller force', 'The nail exerts an equal and opposite force', 'The nail exerts a greater force'],
+        correct_idx: 2,
+        explanation: 'Newton\'s Third Law dictates that forces always occur in equal and opposite action-reaction pairs between two interacting objects.'
       }
     ]
   }
@@ -251,20 +294,29 @@ const TOPICS: Topic[] = [
 const PASSING_MASTERY_SCORE = 80;
 
 export default function App() {
-  const [view, setView] = useState<'welcome' | 'assessment' | 'tutorial' | 'dashboard'>('welcome');
+  const [view, setView] = useState<'welcome' | 'assessment' | 'review' | 'dashboard'>('welcome');
   const [activeTopicIndex, setActiveTopicIndex] = useState(0);
   const [unlockedTopics, setUnlockedTopics] = useState<number[]>([0]);
   const [topicProgress, setTopicProgress] = useState<Record<number, { score: number; passed: boolean }>>({});
+  
+  // Track whether we are using primary questions or variant questions for retakes
+  const [useVariants, setUseVariants] = useState<Record<number, boolean>>({});
 
   const [currentQIndex, setCurrentQIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [userAnswers, setUserAnswers] = useState<Record<number, number>>({});
 
-  const currentTopic = TOPICS[activeTopicIndex];
+  const currentTopicObj = TOPICS[activeTopicIndex];
+  const activeQuestions = useVariants[activeTopicIndex] 
+    ? currentTopicObj.variantQuestions 
+    : currentTopicObj.questions;
 
-  const startAssessment = (topicIdx: number) => {
+  const startAssessment = (topicIdx: number, retakeWithVariant = false) => {
     setActiveTopicIndex(topicIdx);
+    if (retakeWithVariant) {
+      setUseVariants(prev => ({ ...prev, [topicIdx]: true }));
+    }
     setCurrentQIndex(0);
     setSelectedOption(null);
     setIsSubmitted(false);
@@ -279,17 +331,17 @@ export default function App() {
   };
 
   const handleNextQuestion = () => {
-    if (currentQIndex < currentTopic.questions.length - 1) {
+    if (currentQIndex < activeQuestions.length - 1) {
       setCurrentQIndex(prev => prev + 1);
       setSelectedOption(null);
       setIsSubmitted(false);
     } else {
       const finalAnswers = { ...userAnswers, [currentQIndex]: selectedOption! };
-      const correctCount = currentTopic.questions.reduce((acc, q, idx) => {
+      const correctCount = activeQuestions.reduce((acc, q, idx) => {
         return acc + (finalAnswers[idx] === q.correct_idx ? 1 : 0);
       }, 0);
 
-      const scorePct = Math.round((correctCount / currentTopic.questions.length) * 100);
+      const scorePct = Math.round((correctCount / activeQuestions.length) * 100);
       const passed = scorePct >= PASSING_MASTERY_SCORE;
 
       setTopicProgress(prev => ({
@@ -301,17 +353,13 @@ export default function App() {
         setUnlockedTopics(prev => Array.from(new Set([...prev, activeTopicIndex + 1])));
       }
 
-      if (passed) {
-        setView('dashboard');
-      } else {
-        setView('tutorial');
-      }
+      // Transition to review screen to show explanations before going to dashboard/tutorial
+      setView('review');
     }
   };
 
-  const correctCount = Object.entries(userAnswers).filter(
-    ([idx, ans]) => ans === currentTopic.questions[Number(idx)].correct_idx
-  ).length;
+  const currentProgress = topicProgress[activeTopicIndex];
+  const passedCurrent = currentProgress?.passed;
 
   return (
     <div style={styles.container}>
@@ -326,9 +374,7 @@ export default function App() {
           <div style={styles.bannerBox}>
             <h2 style={{ margin: '0 0 10px 0', color: '#0369a1' }}>Welcome to AP Physics 1 Mastery!</h2>
             <p style={{ margin: 0, lineHeight: '1.6', color: '#334155' }}>
-              The purpose of this application is to <strong>diagnose your knowledge level</strong> on core physics concepts and 
-              differentiate a targeted tutorial to help you master each unit up to proficiency. 
-              Once you pass the assessment exam for a topic, you will automatically unlock and advance to the next topic in the curriculum.
+              Diagnose your understanding, review targeted explanations, and conquer variant reassessments to achieve unit mastery.
             </p>
           </div>
 
@@ -344,8 +390,8 @@ export default function App() {
                     <p style={{ margin: 0, fontSize: '0.85rem', color: '#64748b' }}>{t.description}</p>
                   </div>
                   {isUnlocked ? (
-                    <button style={styles.primaryBtnSmall} onClick={() => startAssessment(idx)}>
-                      {prog?.passed ? 'Passed ✅' : 'Start Assessment'}
+                    <button style={styles.primaryBtnSmall} onClick={() => startAssessment(idx, prog?.passed)}>
+                      {prog?.passed ? 'Review / Retake 🔄' : 'Start Assessment 🚀'}
                     </button>
                   ) : (
                     <span style={styles.lockedBadge}>🔒 Locked</span>
@@ -361,27 +407,27 @@ export default function App() {
       {view === 'assessment' && (
         <div style={styles.card}>
           <div style={styles.metaRow}>
-            <span style={styles.badge}>{currentTopic.title}</span>
+            <span style={styles.badge}>{currentTopicObj.title} {useVariants[activeTopicIndex] ? '(Variant Exam)' : ''}</span>
             <span style={{ marginLeft: 'auto', fontSize: '0.85rem', color: '#6b7280' }}>
-              Question {currentQIndex + 1} of {currentTopic.questions.length}
+              Question {currentQIndex + 1} of {activeQuestions.length}
             </span>
           </div>
 
-          {currentTopic.questions[currentQIndex].visualType && (
+          {activeQuestions[currentQIndex].visualType && (
             <VisualAsset
-              type={currentTopic.questions[currentQIndex].visualType!}
-              data={currentTopic.questions[currentQIndex].visualData}
+              type={activeQuestions[currentQIndex].visualType!}
+              data={activeQuestions[currentQIndex].visualData}
             />
           )}
 
-          <h3 style={styles.prompt}>{currentTopic.questions[currentQIndex].prompt}</h3>
+          <h3 style={styles.prompt}>{activeQuestions[currentQIndex].prompt}</h3>
 
           <div style={styles.optionsList}>
-            {currentTopic.questions[currentQIndex].options.map((opt, idx) => {
+            {activeQuestions[currentQIndex].options.map((opt, idx) => {
               let btnStyle = styles.optionBtn;
               if (selectedOption === idx) btnStyle = { ...btnStyle, ...styles.optionSelected };
               if (isSubmitted) {
-                if (idx === currentTopic.questions[currentQIndex].correct_idx) {
+                if (idx === activeQuestions[currentQIndex].correct_idx) {
                   btnStyle = { ...btnStyle, ...styles.optionCorrect };
                 } else if (selectedOption === idx) {
                   btnStyle = { ...btnStyle, ...styles.optionIncorrect };
@@ -400,7 +446,7 @@ export default function App() {
           {isSubmitted && (
             <div style={styles.explanationBox}>
               <h4 style={{ margin: '0 0 6px 0', color: '#0369a1' }}>Explanation:</h4>
-              <p style={{ margin: 0, fontSize: '0.95rem', color: '#334155' }}>{currentTopic.questions[currentQIndex].explanation}</p>
+              <p style={{ margin: 0, fontSize: '0.95rem', color: '#334155' }}>{activeQuestions[currentQIndex].explanation}</p>
             </div>
           )}
 
@@ -415,34 +461,66 @@ export default function App() {
               </button>
             ) : (
               <button style={styles.primaryBtn} onClick={handleNextQuestion}>
-                {currentQIndex < currentTopic.questions.length - 1 ? 'Next Question →' : 'View Assessment Results'}
+                {currentQIndex < activeQuestions.length - 1 ? 'Next Question →' : 'View Assessment Results & Explanations'}
               </button>
             )}
           </div>
         </div>
       )}
 
-      {/* 3. DIFFERENTIATED TUTORIAL SCREEN */}
-      {view === 'tutorial' && (
+      {/* 3. REVIEW & EXPLANATIONS SCREEN */}
+      {view === 'review' && (
         <div style={styles.card}>
-          <div style={styles.bannerBoxWarning}>
-            <h2 style={{ margin: '0 0 8px 0', color: '#b45309' }}>Targeted Tutorial & Skill Builder</h2>
-            <p style={{ margin: 0, color: '#92400e', lineHeight: '1.5' }}>
-              Your diagnostic score was below the 80% mastery threshold ({topicProgress[activeTopicIndex]?.score}%). Review the core concepts below before retaking the assessment.
+          <div style={passedCurrent ? styles.bannerBoxSuccess : styles.bannerBoxWarning}>
+            <h2 style={{ margin: '0 0 8px 0', color: passedCurrent ? '#15803d' : '#b45309' }}>
+              {passedCurrent ? '🎉 Assessment Passed! Mastery Achieved' : '⚠️ Keep Learning: Below Mastery Threshold'}
+            </h2>
+            <p style={{ margin: 0, color: passedCurrent ? '#166534' : '#92400e', lineHeight: '1.5' }}>
+              You scored <strong>{currentProgress?.score}%</strong> ({Object.entries(userAnswers).filter(([idx, ans]) => ans === activeQuestions[Number(idx)].correct_idx).length} out of {activeQuestions.length} correct). 
+              {passedCurrent ? ' You have successfully mastered this unit and unlocked the next topic!' : ' Review the step-by-step explanations below, then retake the assessment with fresh variant questions.'}
             </p>
           </div>
 
-          <div style={{ marginTop: '20px', lineHeight: '1.6', color: '#334155' }}>
-            <h3 style={{ color: '#1e293b' }}>Core Concept Review: {currentTopic.title}</h3>
-            <p>To achieve mastery, ensure you are comfortable with fundamental formulas, conceptual definitions, and analytical problem-solving strategies.</p>
+          <div style={{ marginTop: '24px' }}>
+            <h3 style={{ color: '#1e293b', marginBottom: '16px' }}>Detailed Answer Key & Explanations:</h3>
+            {activeQuestions.map((q, qIdx) => {
+              const userAns = userAnswers[qIdx];
+              const isCorrect = userAns === q.correct_idx;
+              return (
+                <div key={q.id} style={{
+                  padding: '16px',
+                  marginBottom: '14px',
+                  borderRadius: '8px',
+                  backgroundColor: isCorrect ? '#f0fdf4' : '#fef2f2',
+                  border: `1px solid ${isCorrect ? '#bbf7d0' : '#fecaca'}`
+                }}>
+                  <p style={{ margin: '0 0 6px 0', fontWeight: 'bold', color: '#1e293b' }}>
+                    Q{qIdx + 1}: {q.prompt}
+                  </p>
+                  <p style={{ margin: '0 0 4px 0', fontSize: '0.9rem', color: isCorrect ? '#15803d' : '#b91c1c' }}>
+                    Your answer: {userAns !== undefined ? `${String.fromCharCode(65 + userAns)}. ${q.options[userAns]}` : 'No answer'} {isCorrect ? '✅' : '❌'}
+                  </p>
+                  {!isCorrect && (
+                    <p style={{ margin: '0 0 6px 0', fontSize: '0.9rem', color: '#15803d', fontWeight: '600' }}>
+                      Correct answer: {String.fromCharCode(65 + q.correct_idx)}. {q.options[q.correct_idx]}
+                    </p>
+                  )}
+                  <p style={{ margin: 0, fontSize: '0.85rem', color: '#475569', fontStyle: 'italic' }}>
+                    💡 <strong>Explanation:</strong> {q.explanation}
+                  </p>
+                </div>
+              );
+            })}
           </div>
 
           <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
-            <button style={styles.primaryBtn} onClick={() => startAssessment(activeTopicIndex)}>
-              Retake Assessment Exam 🔄
-            </button>
-            <button style={styles.secondaryBtn} onClick={() => setView('welcome')}>
-              Return to Roadmap
+            {!passedCurrent && (
+              <button style={styles.primaryBtn} onClick={() => startAssessment(activeTopicIndex, true)}>
+                Retake Assessment with Variant Questions 🔄
+              </button>
+            )}
+            <button style={passedCurrent ? styles.primaryBtn : styles.secondaryBtn} onClick={() => setView('dashboard')}>
+              View Roadmap & Progress 🗺️
             </button>
           </div>
         </div>
@@ -451,27 +529,30 @@ export default function App() {
       {/* 4. DASHBOARD / ROADMAP VIEW */}
       {view === 'dashboard' && (
         <div style={styles.card}>
-          <div style={styles.bannerBoxSuccess}>
-            <h2 style={{ margin: '0 0 8px 0', color: '#15803d' }}>🎉 Assessment Passed! Mastery Achieved</h2>
-            <p style={{ margin: 0, color: '#166534' }}>
-              You scored {topicProgress[activeTopicIndex]?.score}% ({correctCount} out of {currentTopic.questions.length} correct). You have successfully mastered this unit and unlocked the next topic!
+          <div style={styles.bannerBox}>
+            <h2 style={{ margin: '0 0 8px 0', color: '#0369a1' }}>Curriculum Progress Dashboard</h2>
+            <p style={{ margin: 0, color: '#334155' }}>
+              Track your unlocked units and mastery scores across the AP Physics 1 curriculum.
             </p>
           </div>
 
           <div style={{ marginTop: '24px' }}>
-            <h3 style={{ color: '#1e293b' }}>Your Progress Roadmap:</h3>
             {TOPICS.map((t, idx) => {
               const isUnlocked = unlockedTopics.includes(idx);
               const prog = topicProgress[idx];
               return (
                 <div key={t.id} style={{ ...styles.roadmapItem, opacity: isUnlocked ? 1 : 0.6 }}>
                   <div>
-                    <h4 style={{ margin: '0 0 4px 0', color: '#0f172a' }}>{t.title}</h4>
-                    <p style={{ margin: 0, fontSize: '0.85rem', color: '#64748b' }}>{t.description}</p>
+                    <h4 style={{ margin: '0 0 4px 0', color: '#0f172a' }}>
+                      {t.title} {prog?.passed ? '✅' : ''}
+                    </h4>
+                    <p style={{ margin: 0, fontSize: '0.85rem', color: '#64748b' }}>
+                      {prog ? `Best Score: ${prog.score}%` : t.description}
+                    </p>
                   </div>
                   {isUnlocked ? (
-                    <button style={styles.primaryBtnSmall} onClick={() => startAssessment(idx)}>
-                      {prog?.passed ? 'Passed ✅' : 'Start Assessment'}
+                    <button style={styles.primaryBtnSmall} onClick={() => startAssessment(idx, false)}>
+                      {prog?.passed ? 'Review / Retake' : 'Start Assessment'}
                     </button>
                   ) : (
                     <span style={styles.lockedBadge}>🔒 Locked</span>
@@ -605,7 +686,7 @@ const styles: Record<string, React.CSSProperties> = {
     color: '#b91c1c',
   },
   primaryBtn: {
-    width: '100%',
+    flex: 1,
     padding: '12px 20px',
     backgroundColor: '#0284c7',
     color: '#ffffff',
@@ -626,6 +707,7 @@ const styles: Record<string, React.CSSProperties> = {
     whiteSpace: 'nowrap',
   },
   secondaryBtn: {
+    flex: 1,
     padding: '12px 20px',
     backgroundColor: '#f1f5f9',
     color: '#334155',
